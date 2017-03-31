@@ -127,19 +127,26 @@ def make_files(options,name):
     
     print 'now using options',options
     thing = LHCbHeader(name,options)
-    print '-'*50
-    print 'Generating header'
-    print '-'*50
-    print thing.genHeader()
-    print doxyComment(first=True, text = name)
-    print thing.makebody()
-    
-    print '-'*50
-    print 'Generating cpp'
-    print '-'*50
+    # print '-'*50
+    # print 'Generating header'
+    # print '-'*50
+    if not exists(name+'.h'):
+        ret = thing.genHeader()
+        ret+= doxyComment(first=True, text = name)
+        ret+= thing.makebody()
+        f_dot_h = open(name+'.h','w')
+        f_dot_h.write(ret)
+        f_dot_h.close()
+    else: print name+'.h exists!'
+    # print '-'*50
+    # print 'Generating cpp'
+    # print '-'*50
     thing2 = LHCbCpp(name,options)
-    print thing2.genText()
-
+    if not exists(name+'.cpp'):
+        f_dot_cpp = open(name+'.cpp','w')
+        f_dot_cpp.write(thing2.genText())
+        f_dot_cpp.close()
+    else: print name+'.cpp exists!'
 
 #parse options    
 #classes for header and .cpp file.
