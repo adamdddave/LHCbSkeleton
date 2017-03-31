@@ -1,0 +1,1 @@
+Code for the LHCb template updated for the gaudi functional algorithm

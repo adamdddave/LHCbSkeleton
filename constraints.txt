@@ -1,0 +1,21 @@
+
+
+gaudi functional types:
+
+no input or output --> nothing in functional, so has to be an old style algo
+
+no input, some output --> producer
+
+some input, no output --> consumer
+
+if output is singular, input is n --> Transformer
+
+n output, n input ---> multitransformer
+
+only one output, boolean --> filter predicate
+
+
+//later
+bool + stuff for the output --> multitransformerfilter (expert)
+
+vector input, one output --> merging transformer (expert)
