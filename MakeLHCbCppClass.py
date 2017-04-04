@@ -101,8 +101,8 @@ def make_files(options,name):
             options.GaudiFunctionalOutput = 'OUTPUT'
     else:
         options.GaudiFunctionalOutput = 'void'
-    print'input', options.GaudiFunctionalInput
-    print 'output',options.GaudiFunctionalOutput
+    #print'input', options.GaudiFunctionalInput
+    #print 'output',options.GaudiFunctionalOutput
     
     ###parse normal/davinci settings
     
@@ -125,28 +125,30 @@ def make_files(options,name):
             sys.exit()
     #good to go, make some useful things:
     
-    print 'now using options',options
+#    print 'now using options',options
     thing = LHCbHeader(name,options)
     # print '-'*50
     # print 'Generating header'
     # print '-'*50
-    if not exists(name+'.h'):
+    if options.HeaderOnly==True and not exists(name+'.h'):
         ret = thing.genHeader()
         ret+= doxyComment(first=True, text = name)
         ret+= thing.makebody()
-        f_dot_h = open(name+'.h','w')
-        f_dot_h.write(ret)
-        f_dot_h.close()
-    else: print name+'.h exists!'
+        # f_dot_h = open(name+'.h','w')
+#         f_dot_h.write(ret)
+#         f_dot_h.close()
+        print ret
+    else: pass#print name+'.h exists!'
     # print '-'*50
     # print 'Generating cpp'
     # print '-'*50
     thing2 = LHCbCpp(name,options)
-    if not exists(name+'.cpp'):
-        f_dot_cpp = open(name+'.cpp','w')
-        f_dot_cpp.write(thing2.genText())
-        f_dot_cpp.close()
-    else: print name+'.cpp exists!'
+    if options.cppOnly==True and not exists(name+'.cpp'):
+#         f_dot_cpp = open(name+'.cpp','w')
+#         f_dot_cpp.write(thing2.genText())
+#         f_dot_cpp.close()
+        print thing2.genText()
+    else: pass#print name+'.cpp exists!'
 
 #parse options    
 #classes for header and .cpp file.
@@ -162,7 +164,9 @@ if __name__ == "__main__":
     parser.add_option('-T','--Tool', action='store',help = 'Tool (can also provide -i flag too)')
     parser.add_option('-i','--GaudiFunctionalInput',action='append',help='Input for Gaudi Functional Algorithm')
     parser.add_option('-o','--GaudiFunctionalOutput',action='append',help='Output for Gaudi Functional Algorithm')
-    (options, args) = parser.parse_args()    
+    parser.add_option('-H','--HeaderOnly',action='store_true',help='Only generate the header')
+    parser.add_option('-C','--cppOnly',action='store_true',help='Only generate the .cpp implementation')
+    (options, args) = parser.parse_args()
     if len(args)==0: 
         print 'need a class name!'
         sys.exit()
