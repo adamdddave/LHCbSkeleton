@@ -63,14 +63,19 @@ function! <SID>_GaudiFindPythonScript()
     "
     " the first match wins, and is saved to s:scriptpath, which is used
     " elsewhere in the script
-    let s:scriptpathlist=[
+    let l:scriptpathlist=[
 \       $LBSCRIPTS_HOME . "/InstallArea/scripts/MakeLHCbCppClass.py",
 \       system("which MakeLHCbCppClass.py 2>/dev/null"),
 \       expand('<sfile>:p:h') . "/MakeLHCbCppClass.py",
 \       "./MakeLHCbCppClass.py" ]
-    for p in s:scriptpathlist
-        if (executable(p))
-            let s:scriptpath=p
+    for p in l:scriptpathlist
+        let l:temp = p
+        call inputsave()
+        call input(("searching in " . l:temp . " " . " ==> found: " . system("if [ -x " . shellescape(l:temp) . " ]; then echo present; else echo absent; fi")))
+        call inputrestore()
+        if getfperm(l:temp) =~ 'r.\+x'
+            let l:scriptpath=l:temp
+            return
         endif
     endfor
     echo "MakeLHCbCppClass.py not found!"
@@ -89,34 +94,34 @@ endfunction
 " among several alternatives
 function! <SID>_GaudiPrompt(prompt, alternatives)
     if "" != a:prompt
-        let s:prompt=a:prompt
+        let l:prompt=a:prompt
     else
-        let s:prompt=map(copy(a:alternatives),
+        let l:prompt=map(copy(a:alternatives),
 \           '"(" . v:val[0] . ")" . v:val[1:]')
-        let s:prompt=join(s:prompt, ", ") . "? "
+        let l:prompt=join(l:prompt, ", ") . "? "
     endif
     " set up completion
     let s:prompt_alternatives=join(a:alternatives, "\n")
     " set up matching
-    let s:matchlist=map(copy(a:alternatives), 'tolower(v:val)')
+    let l:matchlist=map(copy(a:alternatives), 'tolower(v:val)')
     " set up prompt to use
-    let s:useprompt=s:prompt
+    let l:useprompt=l:prompt
     " ask user until they provide a reasonable answer
-    let s:prompt_reply=-1
-    while -1 == s:prompt_reply
+    let l:prompt_reply=-1
+    while -1 == l:prompt_reply
         " prompt with completion
         call inputsave()
-        let s:prompt_reply=tolower(input(s:useprompt, "",
+        let l:prompt_reply=tolower(input(l:useprompt, "",
 \           "custom,_GaudiPromptCompl"))
         call inputrestore()
         " check against list of alternatives (case insensitive)
-        let s:prompt_reply=match(s:matchlist, "^" . s:prompt_reply)
+        let l:prompt_reply=match(l:matchlist, "^" . l:prompt_reply)
         " assume user botched it
-        let s:useprompt="try again: " . s:prompt
+        let l:useprompt="try again: " . l:prompt
     endwhile
     " user provided valid choice - go to pretty format
-    let s:prompt_reply=get(a:alternatives, s:prompt_reply)
-    return s:prompt_reply
+    let l:prompt_reply=get(a:alternatives, l:prompt_reply)
+    return l:prompt_reply
 endfunction
 
 " use supplied type, ask user if nothing supplied
@@ -175,15 +180,15 @@ function! <SID>_GaudiAskInterfaces(type, cmdline, interfaces)
     if a:type =~ '^Tool'
         " no sensible default here, so we can use straight input
         if "" != a:interfaces
-            let s:interfaces=a:interfaces
+            let l:interfaces=a:interfaces
         else
             call inputsave()
-            let s:interfaces=input("semicolon-separated list of interfaces " .
+            let l:interfaces=input("semicolon-separated list of interfaces " .
 \               "[default=none]: ")
             call inputrestore()
         endif
-        if "" == s:interfaces
-            return a:cmdline + ["--Interface=" . shellescape(s:interfaces)]
+        if "" == l:interfaces
+            return a:cmdline + ["--Interface=" . shellescape(l:interfaces)]
         endif
     endif
     return a:cmdline
@@ -202,29 +207,29 @@ function! <SID>_GaudiTemplateBuildCmdLine(type, subtype, classname, interfaces)
         return
     endif
     " ask or find out what we do not already know
-    let s:type=<SID>_GaudiAskType(a:type)
-    let s:subtype=<SID>_GaudiAskSubtype(s:type, a:subtype)
+    let l:type=<SID>_GaudiAskType(a:type)
+    let l:subtype=<SID>_GaudiAskSubtype(l:type, a:subtype)
     " get class name from buffer name, if not supplied by caller
-    let s:classname=a:classname
-    if "" == s:classname
-        let s:classname=expand("%:r")
+    let l:classname=a:classname
+    if "" == l:classname
+        let l:classname=expand("%:r")
     endif
     " need to guess header or implementation file here
-    let s:is_header=((tolower(expand("%:e")) =~ '^\(h\|hpp\|hxx\)$'))
+    let l:is_header=((tolower(expand("%:e")) =~ '^\(h\|hpp\|hxx\)$'))
     " build the command line
-    let s:cmdline= [ s:scriptpath,
-\       <SID>_GaudiType2CmdLine(s:type),
-\       <SID>_GaudiSubtype2CmdLine(s:type, s:subtype),
-\       <SID>_GaudiHeaderOrCpp2CmdLine(s:is_header)]
+    let l:cmdline= [ s:scriptpath,
+\       <SID>_GaudiType2CmdLine(l:type),
+\       <SID>_GaudiSubtype2CmdLine(l:type, l:subtype),
+\       <SID>_GaudiHeaderOrCpp2CmdLine(l:is_header) ]
     " add interfaces, if appropriate
-    let s:cmdline=<SID>_GaudiAskInterfaces(s:type, s:cmdline, a:interfaces)
+    let l:cmdline=<SID>_GaudiAskInterfaces(l:type, l:cmdline, a:interfaces)
     " append class name, and transform everything into a string
-    let s:cmdline=join(s:cmdline + [shellescape(s:classname)])
+    let l:cmdline=join(l:cmdline + [shellescape(l:classname)])
     " okay, call the command line, and insert its output into the current
     " buffer, saving and restoring the place in the file as we go
-    let s:savedline = line(".")
-    call append(s:savedline - 1, systemlist(s:cmdline))
-    call setpos(".", [0, s:savedline, 0, 0])
+    let l:savedline = line(".")
+    call append(l:savedline - 1, systemlist(l:cmdline))
+    call setpos(".", [0, l:savedline, 0, 0])
     " say we're done
     let s:avoidracecond = 0
 endfunction
