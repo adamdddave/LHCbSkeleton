@@ -69,9 +69,9 @@ function! <SID>_GaudiFindPythonScript(vimscriptpath)
 \           system("which MakeLHCbCppClass.py 2>/dev/null"), '\n\+$', '', ''),
 \       expand(a:vimscriptpath . ':p:h') . "/MakeLHCbCppClass.py",
 \       "./MakeLHCbCppClass.py" ]
-    for p in l:scriptpathlist
-        if getfperm(p) =~ 'r.\+x'
-            let s:scriptpath=l:p
+    for l:path in l:scriptpathlist
+        if getfperm(l:path) =~ 'r.\+x'
+            let s:scriptpath=l:path
             return
         endif
     endfor
@@ -222,10 +222,19 @@ function! <SID>_GaudiTemplateBuildCmdLine(type, subtype, classname, interfaces)
     let l:cmdline=<SID>_GaudiAskInterfaces(l:type, l:cmdline, a:interfaces)
     " append class name, and transform everything into a string
     let l:cmdline=join(l:cmdline + [shellescape(l:classname)])
-    " okay, call the command line, and insert its output into the current
-    " buffer, saving and restoring the place in the file as we go
+    " save current position in buffer
     let l:savedline = line(".")
-    call append(l:savedline - 1, systemlist(l:cmdline))
+    " call MakeLHCbCppClass to produce what should be inserted
+    let l:lines=systemlist(l:cmdline)
+    " remove spurious newlines on the list's elements
+    let l:lines=map(l:lines, "substitute(v:val, '\n\+$', '', '')")
+    " remove trailing empty lines in the list
+    while "" == l:lines[len(l:lines) - 1]
+        call remove(l:lines, len(l:lines) - 1)
+    endwhile
+    " insert into current buffer
+    call append(l:savedline - 1, l:lines)
+    " restore position in buffer
     call setpos(".", [0, l:savedline, 0, 0])
     " say we're done
     let s:avoidracecond = 0
