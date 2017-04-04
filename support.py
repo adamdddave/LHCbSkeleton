@@ -10,7 +10,7 @@ def doxyComment(text='',first = False):
     if first==True:
         retstr+= "* @author %s\n"%(pwd.getpwuid(os.getuid())[4])
         retstr+= "* @date   %s\n"%(time.strftime("%d/%m/%Y"))
-    retstr+="*/"
+    retstr+="*/\n"
     return retstr
 def comment(text='',sep = '-',isFinal=False):
     com = "//"+sep*75
