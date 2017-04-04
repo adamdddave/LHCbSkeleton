@@ -170,8 +170,25 @@ function! <SID>_GaudiHeaderOrCpp2CmdLine(isheader)
     endif
 endfunction
 
+" ask which interfaces a Tool/Algorithm/DaVinciAlgorithm should conform to
+function! <SID>_GaudiAskInterfaces(type, cmdline, interfaces)
+    if a:type =~ '^Tool'
+        " no sensible default here, so we can use straight input
+        if "" != a:interfaces
+            let s:interfaces=a:interfaces
+        else
+            call inputsave()
+            let s:interfaces=input("semicolon-separated list of interfaces " .
+\               "[default=none]: ")
+            call inputrestore()
+        endif
+        return a:cmdline + ["--Interface=" . shellescape(s:interfaces)]
+    endif
+    return a:cmdline
+endfunction
+
 " the magic function that makes it all happen
-function! <SID>_GaudiTemplateBuildCmdLine(type, subtype, classname)
+function! <SID>_GaudiTemplateBuildCmdLine(type, subtype, classname, interfaces)
     " at most one concurrent invocation - there may be race conditions, but
     " some protection is better than none... the point here is not to be
     " thread-safe, but to avoid that the routine gets stuck if the user calls
@@ -192,13 +209,15 @@ function! <SID>_GaudiTemplateBuildCmdLine(type, subtype, classname)
     endif
     " need to guess header or implementation file here
     let s:is_header=((tolower(expand("%:e")) =~ '^\(h\|hpp\|hxx\)$'))
-    echo tolower(expand("%:e")) =~ '^\(h\|hpp\|hxx\)$'
     " build the command line
-    let s:cmdline= join([ s:scriptpath,
+    let s:cmdline= [ s:scriptpath,
 \       <SID>_GaudiType2CmdLine(s:type),
 \       <SID>_GaudiSubtype2CmdLine(s:type, s:subtype),
-\       <SID>_GaudiHeaderOrCpp2CmdLine(s:is_header),
-\       shellescape(s:classname) ])
+\       <SID>_GaudiHeaderOrCpp2CmdLine(s:is_header)]
+    " add interfaces, if appropriate
+    let s:cmdline=<SID>_GaudiAskInterfaces(s:type, s:cmdline, a:interfaces)
+    " append class name, and transform everything into a string
+    let s:cmdline=join(s:cmdline + [shellescape(s:classname)])
     " okay, call the command line, and insert its output into the current
     " buffer, saving and restoring the place in the file as we go
     let s:savedline = line(".")
@@ -213,17 +232,17 @@ call <SID>_GaudiFindPythonScript()
 " if successful, define user-facing commands...
 if exists("s:scriptpath")
     " define the commands the user can call
-    command! -nargs=0 GaudiAnything :call <SID>_GaudiTemplateBuildCmdLine("", "", "")
-    command! -nargs=0 GaudiAlgorithm :call <SID>_GaudiTemplateBuildCmdLine("Algorithm", "Normal", "")
-    command! -nargs=0 GaudiHistoAlg :call <SID>_GaudiTemplateBuildCmdLine("Algorithm", "Histo", "")
-    command! -nargs=0 GaudiTupleAlg :call <SID>_GaudiTemplateBuildCmdLine("Algorithm", "Tuple", "")
-    command! -nargs=0 GaudiTool :call <SID>_GaudiTemplateBuildCmdLine("Tool", "Normal", "")
-    command! -nargs=0 GaudiHistoTool :call <SID>_GaudiTemplateBuildCmdLine("Tool", "Histo", "")
-    command! -nargs=0 GaudiTupleTool :call <SID>_GaudiTemplateBuildCmdLine("Tool", "Tuple", "")
-    command! -nargs=0 DaVinciAlg :call <SID>_GaudiTemplateBuildCmdLine("DaVinciAlgorithm", "Normal", "")
-    command! -nargs=0 DaVinciHistoAlg :call <SID>_GaudiTemplateBuildCmdLine("DaVinciAlgorithm", "Histo", "")
-    command! -nargs=0 DaVinciTupleAlg :call <SID>_GaudiTemplateBuildCmdLine("DaVinciAlgorithm", "Tuple", "")
-    command! -nargs=0 GaudiInterface :call <SID>_GaudiTemplateBuildCmdLine("Interface", "", "")
+    command! -nargs=0 GaudiAnything :call <SID>_GaudiTemplateBuildCmdLine("", "", "", "")
+    command! -nargs=0 GaudiAlgorithm :call <SID>_GaudiTemplateBuildCmdLine("Algorithm", "Normal", "", "")
+    command! -nargs=0 GaudiHistoAlg :call <SID>_GaudiTemplateBuildCmdLine("Algorithm", "Histo", "", "")
+    command! -nargs=0 GaudiTupleAlg :call <SID>_GaudiTemplateBuildCmdLine("Algorithm", "Tuple", "", "")
+    command! -nargs=0 GaudiTool :call <SID>_GaudiTemplateBuildCmdLine("Tool", "Normal", "", "")
+    command! -nargs=0 GaudiHistoTool :call <SID>_GaudiTemplateBuildCmdLine("Tool", "Histo", "", "")
+    command! -nargs=0 GaudiTupleTool :call <SID>_GaudiTemplateBuildCmdLine("Tool", "Tuple", "", "")
+    command! -nargs=0 DaVinciAlg :call <SID>_GaudiTemplateBuildCmdLine("DaVinciAlgorithm", "Normal", "", "")
+    command! -nargs=0 DaVinciHistoAlg :call <SID>_GaudiTemplateBuildCmdLine("DaVinciAlgorithm", "Histo", "", "")
+    command! -nargs=0 DaVinciTupleAlg :call <SID>_GaudiTemplateBuildCmdLine("DaVinciAlgorithm", "Tuple", "", "")
+    command! -nargs=0 GaudiInterface :call <SID>_GaudiTemplateBuildCmdLine("Interface", "", "", "")
 endif
 
 " vim: sw=4:tw=78:ft=vim:et
