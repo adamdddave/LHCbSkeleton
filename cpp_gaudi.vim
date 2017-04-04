@@ -191,7 +191,8 @@ function! <SID>_GaudiTemplateBuildCmdLine(type, subtype, classname)
         let s:classname=expand("%:r")
     endif
     " need to guess header or implementation file here
-    let s:is_header=(tolower(expand("%:e")) =~ "^\(h\|hpp|hxx\)$")
+    let s:is_header=((tolower(expand("%:e")) =~ '^\(h\|hpp\|hxx\)$'))
+    echo tolower(expand("%:e")) =~ '^\(h\|hpp\|hxx\)$'
     " build the command line
     let s:cmdline= join([ s:scriptpath,
 \       <SID>_GaudiType2CmdLine(s:type),
