@@ -65,16 +65,12 @@ function! <SID>_GaudiFindPythonScript()
     " elsewhere in the script
     let l:scriptpathlist=[
 \       $LBSCRIPTS_HOME . "/InstallArea/scripts/MakeLHCbCppClass.py",
-\       system("which MakeLHCbCppClass.py 2>/dev/null"),
+\       substitute(system("which MakeLHCbCppClass.py 2>/dev/null"), '\n\+$', '', ''),
 \       expand('<sfile>:p:h') . "/MakeLHCbCppClass.py",
 \       "./MakeLHCbCppClass.py" ]
     for p in l:scriptpathlist
-        let l:temp = p
-        call inputsave()
-        call input(("searching in " . l:temp . " " . " ==> found: " . system("if [ -x " . shellescape(l:temp) . " ]; then echo present; else echo absent; fi")))
-        call inputrestore()
-        if getfperm(l:temp) =~ 'r.\+x'
-            let l:scriptpath=l:temp
+        if getfperm(p) =~ 'r.\+x'
+            let s:scriptpath=l:p
             return
         endif
     endfor
