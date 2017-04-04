@@ -182,7 +182,9 @@ function! <SID>_GaudiAskInterfaces(type, cmdline, interfaces)
 \               "[default=none]: ")
             call inputrestore()
         endif
-        return a:cmdline + ["--Interface=" . shellescape(s:interfaces)]
+        if "" == s:interfaces
+            return a:cmdline + ["--Interface=" . shellescape(s:interfaces)]
+        endif
     endif
     return a:cmdline
 endfunction
