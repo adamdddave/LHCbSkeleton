@@ -57,7 +57,7 @@ if exists("loaded_cpp_gaudi") || &cp
 endif
 
 " little helper to search for the python part in a few reasonable places
-function! <SID>_GaudiFindPythonScript()
+function! <SID>_GaudiFindPythonScript(vimscriptpath)
     " check $LBSCRIPTS_HOME, the path, the directory in which the vim script
     " is located and finally the current directory
     "
@@ -65,8 +65,9 @@ function! <SID>_GaudiFindPythonScript()
     " elsewhere in the script
     let l:scriptpathlist=[
 \       $LBSCRIPTS_HOME . "/InstallArea/scripts/MakeLHCbCppClass.py",
-\       substitute(system("which MakeLHCbCppClass.py 2>/dev/null"), '\n\+$', '', ''),
-\       expand('<sfile>:p:h') . "/MakeLHCbCppClass.py",
+\       substitute(
+\           system("which MakeLHCbCppClass.py 2>/dev/null"), '\n\+$', '', ''),
+\       expand(a:vimscriptpath . ':p:h') . "/MakeLHCbCppClass.py",
 \       "./MakeLHCbCppClass.py" ]
     for p in l:scriptpathlist
         if getfperm(p) =~ 'r.\+x'
@@ -81,7 +82,7 @@ endfunction
 function! _GaudiPromptCompl(arglead, cmdline, cursorpos)
     " FIXME: is there a way to limit the scope of this routine, too, just as
     " it's done for the others with '<SID>functionName'? - Manuel
-    return s:prompt_alternatives
+    return s:prompt_compl_alternatives
 endfunction
 
 " ask the user questions in the status line, allow completion
@@ -97,7 +98,7 @@ function! <SID>_GaudiPrompt(prompt, alternatives)
         let l:prompt=join(l:prompt, ", ") . "? "
     endif
     " set up completion
-    let s:prompt_alternatives=join(a:alternatives, "\n")
+    let s:prompt_compl_alternatives=join(a:alternatives, "\n")
     " set up matching
     let l:matchlist=map(copy(a:alternatives), 'tolower(v:val)')
     " set up prompt to use
@@ -231,7 +232,7 @@ function! <SID>_GaudiTemplateBuildCmdLine(type, subtype, classname, interfaces)
 endfunction
 
 " first order of business: find the python script
-call <SID>_GaudiFindPythonScript()
+call <SID>_GaudiFindPythonScript(expand("<sfile>"))
 " if successful, define user-facing commands...
 if exists("s:scriptpath")
     " define the commands the user can call
