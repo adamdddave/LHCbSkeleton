@@ -51,7 +51,7 @@
 " the command names from Kurt's excellent work, and acknowledge his efforts
 " (which have made my life a lot easier in the past).
 
-" avoid loading this twice, or in nocompatible mode
+" avoid loading this script twice, or in nocompatible mode
 if exists("loaded_cpp_gaudi") || &cp
     finish
 endif
@@ -172,23 +172,68 @@ function! <SID>_GaudiHeaderOrCpp2CmdLine(isheader)
     endif
 endfunction
 
+" ask user which list of things (s)he wants
+function! <SID>_GaudiAskThings(things, default, askAnyway)
+    if "" != a:default && !a:askAnyway
+        return a:default
+    endif
+    call inputsave()
+    if a:askAnyway && "" != a:default
+        let l:defstr = ""
+    else
+        let l:defstr = " [default=none]"
+    endif
+    let l:retVal=input("semicolon-separated list of " . a:things .
+\       l:defstr . ": ". a:default)
+    call inputrestore()
+    return l:retVal
+endfunction
+
 " ask which interfaces a Tool/Algorithm/DaVinciAlgorithm should conform to
 function! <SID>_GaudiAskInterfaces(type, cmdline, interfaces)
     if a:type =~ '^Tool'
-        " no sensible default here, so we can use straight input
-        if "" != a:interfaces
-            let l:interfaces=a:interfaces
-        else
-            call inputsave()
-            let l:interfaces=input("semicolon-separated list of interfaces " .
-\               "[default=none]: ")
-            call inputrestore()
-        endif
+        let l:interfaces=<SID>_GaudiAskThings("interfaces", a:interfaces, 0)
         if "" == l:interfaces
             return a:cmdline + ["--Interface=" . shellescape(l:interfaces)]
         endif
     endif
     return a:cmdline
+endfunction
+
+" ask user for inputs and outputs in case of FunctionalAlgorithm
+function! <SID>_GaudiAskInputsOutputs(type, inputs, outputs)
+    if a:type != "FunctionalAlgorithm"
+        return {}
+    endif
+    return { 'inputs': <SID>_GaudiAskThings("input type(s)", a:inputs, 0),
+\       'outputs': <SID>_GaudiAskThings("output type(s)", a:outputs, 0) }
+endfunction
+
+" guess functional algorithm type based on inputs and outputs
+function! <SID>_GaudiGuessFunctionalAlg(type, subtype, ios)
+    if "FunctionalAlgorithm" != a:type || "" != a:subtype
+        return a:subtype
+    endif
+    let l:inputs=a:ios['inputs']
+    let l:outputs=a:ios['outputs']
+    let l:nIn=len(split(l:inputs, ";"))
+    let l:nOut=len(split(l:outputs, ";"))
+    if 0 == l:nIn && 0 == l:nOut
+        " no functional algorithm fits, so ask user...
+        return ""
+    elseif 0 == l:nIn
+        return "Producer"
+    elseif 0 == l:nOut
+        return "Consumer"
+    elseif 1 == l:nOut && 0 < l:nIn
+        if l:outputs =~ '^\(bool\|Bool\|Bool_t\)$'
+            return "FilterPredicate"
+        else
+            return "Transformer"
+        endif
+    else
+        return "Multitransformer"
+    endif
 endfunction
 
 " the magic function that makes it all happen
@@ -205,7 +250,9 @@ function! <SID>_GaudiTemplateBuildCmdLine(type, subtype, classname, interfaces)
     endif
     " ask or find out what we do not already know
     let l:type=<SID>_GaudiAskType(a:type)
-    let l:subtype=<SID>_GaudiAskSubtype(l:type, a:subtype)
+    let l:ios = <SID>_GaudiAskInputsOutputs(l:type, a:inputs, a:outputs)
+    let l:subtype=<SID>_GaudiGuessFunctionalAlg(l:type, a:subtype, l:ios)
+    let l:subtype=<SID>_GaudiAskSubtype(l:type, l:subtype)
     " get class name from buffer name, if not supplied by caller
     let l:classname=a:classname
     if "" == l:classname
