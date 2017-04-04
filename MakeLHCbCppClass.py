@@ -134,9 +134,10 @@ def make_files(options,name):
         ret = thing.genHeader()
         ret+= doxyComment(first=True, text = name)
         ret+= thing.makebody()
-        # f_dot_h = open(name+'.h','w')
-#         f_dot_h.write(ret)
-#         f_dot_h.close()
+        if options.write==True:
+            f_dot_h = open(name+'.h','w')
+            f_dot_h.write(ret)
+            f_dot_h.close()
         print ret
     else: pass#print name+'.h exists!'
     # print '-'*50
@@ -144,9 +145,10 @@ def make_files(options,name):
     # print '-'*50
     thing2 = LHCbCpp(name,options)
     if options.cppOnly==True and not exists(name+'.cpp'):
-#         f_dot_cpp = open(name+'.cpp','w')
-#         f_dot_cpp.write(thing2.genText())
-#         f_dot_cpp.close()
+        if options.write==True:
+            f_dot_cpp = open(name+'.cpp','w')
+            f_dot_cpp.write(thing2.genText())
+            f_dot_cpp.close()
         print thing2.genText()
     else: pass#print name+'.cpp exists!'
 
@@ -166,6 +168,7 @@ if __name__ == "__main__":
     parser.add_option('-o','--GaudiFunctionalOutput',action='append',help='Output for Gaudi Functional Algorithm')
     parser.add_option('-H','--HeaderOnly',action='store_true',help='Only generate the header')
     parser.add_option('-C','--cppOnly',action='store_true',help='Only generate the .cpp implementation')
+    parser.add_option('-W','--write', action='store_true',help='Use the python script to write the output')
     (options, args) = parser.parse_args()
     if len(args)==0: 
         print 'need a class name!'
