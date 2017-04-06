@@ -55,6 +55,10 @@
 if exists("loaded_cpp_gaudi") || &cp
     finish
 endif
+if version < 704
+    echo 'Gaudi template support needs at least vim 7.4'
+    finish
+endif
 
 " list of basic Gaudi entity types the script can handle
 let s:GaudiTypes=["Algorithm", "DaVinciAlg", "Functional",
@@ -343,7 +347,9 @@ function! <SID>_GaudiAnything(dict)
     " call MakeLHCbCppClass to produce what should be inserted
     let l:lines=systemlist(l:cmdline)
     " remove spurious newlines on the list's elements
-    let l:lines=map(l:lines, "substitute(v:val, '\n\+$', '', '')")
+    for l:line in l:lines
+        let l:line=substitute(l:line, '\n\+$', '', '')
+    endfor
     " remove trailing empty lines in the list
     while "" == l:lines[len(l:lines) - 1]
         call remove(l:lines, len(l:lines) - 1)
