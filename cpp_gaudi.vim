@@ -56,7 +56,7 @@ if exists("loaded_cpp_gaudi") || &cp
     finish
 endif
 if version < 704
-    echo 'Gaudi template support needs at least vim 7.4'
+    echoerr 'Gaudi template support needs at least vim 7.4'
     finish
 endif
 
@@ -99,7 +99,7 @@ function! <SID>_GaudiFindPythonScript(vimscriptpath)
             return
         endif
     endfor
-    echo "MakeLHCbCppClass.py not found!"
+    echoerr "MakeLHCbCppClass.py not found - refusing to work!"
 endfunction
 
 " a little helper to make vim complete in our prompts
