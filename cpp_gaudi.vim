@@ -71,8 +71,10 @@ let s:GaudiCmdLineTypeMap={ 'DaVinciAlg': 'DaVinciAlgorithm',
 \           'Functional': 'GaudiFunctionalAlgorithm' }
 " dictionary for the option used for subtypes (depending on differnt types)
 let s:GaudiCmdLineSubtypeOptionMap={ 'DaVinciAlg': '--DaVinciAlgorithmType',
-\           'Functional': '--GaudiFunctional', 'Algoritm': '--AlgorithmType',
+\           'Functional': '--GaudiFunctional', 'Algorithm': '--AlgorithmType',
 \           'Tool': '--AlgorithmType'}
+" list of possible completions
+let s:prompt_compl_alternatives = []
 
 " little helper to search for the python part in a few reasonable places
 function! <SID>_GaudiFindPythonScript(vimscriptpath)
@@ -136,27 +138,32 @@ function! <SID>_GaudiPrompt(prompt, alternatives, ...)
     else
         let l:default=""
     endif
-    " set up completion
-    let s:prompt_compl_alternatives=a:alternatives
-    " set up matching
-    let l:matchlist=map(copy(a:alternatives), 'tolower(v:val)')
-    " set up prompt to use
-    let l:useprompt=l:prompt
-    " ask user until they provide a reasonable answer
-    let l:prompt_reply=-1
-    while -1 == l:prompt_reply
-        " prompt with completion
-        call inputsave()
-        let l:prompt_reply=tolower(input(l:useprompt, l:default,
-\           "custom,_GaudiPromptCompl"))
-        call inputrestore()
-        " check against list of alternatives (case insensitive)
-        let l:prompt_reply=match(l:matchlist, "^" . l:prompt_reply)
-        " assume user botched it
-        let l:useprompt="try again: " . l:prompt
-    endwhile
-    " user provided valid choice - go to pretty format
-    let l:prompt_reply=get(a:alternatives, l:prompt_reply)
+    " set up completion - save old completion parameters
+    let l:prompt_compl_alternatives_save = s:prompt_compl_alternatives
+    try " set new completion, and ask user - cleanup in finally below
+        let s:prompt_compl_alternatives=a:alternatives
+        " set up matching
+        let l:matchlist=map(copy(a:alternatives), 'tolower(v:val)')
+        " set up prompt to use
+        let l:useprompt=l:prompt
+        " ask user until they provide a reasonable answer
+        let l:prompt_reply=-1
+        while -1 == l:prompt_reply
+            " prompt with completion
+            call inputsave()
+            let l:prompt_reply=tolower(input(l:useprompt, l:default,
+                        \           "custom,_GaudiPromptCompl"))
+            call inputrestore()
+            " check against list of alternatives (case insensitive)
+            let l:prompt_reply=match(l:matchlist, "^" . l:prompt_reply)
+            " assume user botched it
+            let l:useprompt="try again: " . l:prompt
+        endwhile
+        " user provided valid choice - go to pretty format
+        let l:prompt_reply=get(a:alternatives, l:prompt_reply)
+    finally " restore old set of completion
+        let s:prompt_compl_alternatives = l:prompt_compl_alternatives_save
+    endtry
     return l:prompt_reply
 endfunction
 
@@ -182,8 +189,7 @@ function! <SID>_GaudiAskType(dict)
     let l:dict = a:dict
     let l:dict['type'] = <SID>_GaudiPrompt(
 \       'type of Gaudi entity (Tab for completions): ',
-\       get(l:dict, 'type', ''),
-\       s:GaudiTypes)
+\       s:GaudiTypes, get(l:dict, 'type', ''))
     return l:dict
 endfunction
 
@@ -202,10 +208,10 @@ endfunction
 function! <SID>_GaudiAskInputsOutputs(dict)
     let l:dict = a:dict
     if l:dict['type'] =~ '^Functional'
-        let l:type['inputs'] = <SID>_GaudiAskThings("input type(s)",
-\           get(l:type, 'inputs', ''), 0)
-        let l:type['outputs'] = <SID>_GaudiAskThings("output type(s)",
-\           get(l:type, 'outputs', ''), 0)
+        let l:dict['inputs'] = <SID>_GaudiAskThings("input type(s)",
+\           get(l:dict, 'inputs', ''), 0)
+        let l:dict['outputs'] = <SID>_GaudiAskThings("output type(s)",
+\           get(l:dict, 'outputs', ''), 0)
         " strip trailing semicolons
         for l:key in [ 'inputs', 'outputs' ]
             let l:dict[l:key] = substitute(l:dict[l:key], ';\+$', '', '')
@@ -215,13 +221,12 @@ function! <SID>_GaudiAskInputsOutputs(dict)
 endfunction
 
 " ask for subtype if required, and not known already
-function! <SID>_GaudiAskSubType(dict)
+function! <SID>_GaudiAskSubtype(dict)
     let l:dict = a:dict
     if l:dict['type'] =~ '^\(Algorithm\|DaVinciAlgorithm\|Functional\|Tool\)'
         let l:dict['subtype'] = <SID>_GaudiPrompt(
-\       'subtype of ' . l:dict['type'] . ' (Tab for completions): ',
-\       get(l:dict, 'subtype', ''),
-\       s:GaudiSubtypes[l:dict['type']])
+\           'subtype of ' . l:dict['type'] . ' (Tab for completions): ',
+\           s:GaudiSubtypes[l:dict['type']], get(l:dict, 'subtype', ''))
     endif
     return l:dict
 endfunction
@@ -232,8 +237,6 @@ function! <SID>_GaudiGuessFunctionalAlg(dict)
         return a:dict
     endif
     let l:dict=a:dict
-    let l:inputs=a:ios['inputs']
-    let l:outputs=a:ios['outputs']
     let l:nIn=len(split(l:dict['inputs'], ";"))
     let l:nOut=len(split(l:dict['outputs'], ";"))
     if 0 == l:nIn && 0 == l:nOut
@@ -280,7 +283,7 @@ function! <SID>_GaudiBuildCmdLine(dict)
     if a:dict['type'] =~ '^\(Algorithm\|Tool\|DaVinciAlg\|Functional\)$'
         " subtype is easy (if needed)
         let l:arglist=l:arglist+[s:GaudiCmdLineSubtypeOptionMap[a:dict['type']]
-\           . shellescape(a:dict['subtype'])]
+\           . '=' . shellescape(a:dict['subtype'])]
     endif
     if a:dict['type'] =~ '^Tool$'
         " next, deal with the interface (if we need one)
@@ -294,7 +297,7 @@ function! <SID>_GaudiBuildCmdLine(dict)
 \           '--GaudiFunctionalOutput=' . shellescape(a:dict['outputs'])]
     endif
     " are we dealing with a header or the implementation?
-    if l:dict['filetype'] == 'header'
+    if a:dict['filetype'] == 'header'
         let l:arglist=l:arglist+['--HeaderOnly']
     else
         let l:arglist=l:arglist+['--cppOnly']
@@ -307,16 +310,6 @@ endfunction
 
 " the magic function that makes it all happen
 function! <SID>_GaudiAnything(dict)
-    " at most one concurrent invocation - there may be race conditions, but
-    " some protection is better than none... the point here is not to be
-    " thread-safe, but to avoid that the routine gets stuck if the user calls
-    " it on one buffer, goes to a different buffer, and calls it again
-    if !exists("s:avoidracecond") || 0 == s:avoidracecond
-        let s:avoidracecond = 1
-    else
-        echo "<sfile>: finish the :Gaudi* in the other buffer first!"
-        return
-    endif
     " ask for type, subtype, inputs, outputs, interfaces (if we do not know already)
     let l:dict=<SID>_GaudiAskType(a:dict)
     let l:dict=<SID>_GaudiAskInterfaces(l:dict)
@@ -344,8 +337,6 @@ function! <SID>_GaudiAnything(dict)
     call append(l:savedline - 1, l:lines)
     " restore position in buffer
     call setpos(".", [0, l:savedline, 0, 0])
-    " say we're done
-    let s:avoidracecond = 0
 endfunction
 
 " first order of business: find the python script
