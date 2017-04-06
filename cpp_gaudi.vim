@@ -9,7 +9,7 @@
 " - GaudiTool, GaudiHistoTool, GaudiTupleTool
 " - DaVinciAlgorithm, DaVinciHistoAlg, DaVinciTupleAlg
 " - GaudiInterface
-" - missing: functional algorithms
+" - GaudiFunctional
 "
 " In general, these commands will ask the user interactively if there are
 " questions to be asked, and the user can use the Tab key to show possible
@@ -51,7 +51,7 @@
 " the command names from Kurt's excellent work, and acknowledge his efforts
 " (which have made my life a lot easier in the past).
 
-" avoid loading this twice, or in nocompatible mode
+" avoid loading this script twice, or in nocompatible mode
 if exists("loaded_cpp_gaudi") || &cp
     finish
 endif
@@ -82,14 +82,29 @@ endfunction
 function! _GaudiPromptCompl(arglead, cmdline, cursorpos)
     " FIXME: is there a way to limit the scope of this routine, too, just as
     " it's done for the others with '<SID>functionName'? - Manuel
-    return s:prompt_compl_alternatives
+    if "" != a:arglead
+        " check which alternatives match
+        let l:matches=filter(s:prompt_compl_alternatives,
+\           "-1 != match(tolower(v:val), '" . tolower(a:arglead) . "')")
+        if 0 == len(l:matches) || (1 == len(l:matches)
+\               && tolower(a:arglead) == tolower(l:matches[0]))
+            " if no matches, there's probably a typo or similar, so provide
+            " all alternatives; we do the same if we already have a full
+            " match, since the user is probably trying to find something else
+            let l:matches=s:prompt_compl_alternatives
+        endif
+        return join(l:matches, "\n")
+    else
+        " any one is a potential completion
+        return join(s:prompt_compl_alternatives, "\n")
+    endif
 endfunction
 
 " ask the user questions in the status line, allow completion
 "
 " this routine does all the heavy lifting when the user is required to select
 " among several alternatives
-function! <SID>_GaudiPrompt(prompt, alternatives)
+function! <SID>_GaudiPrompt(prompt, alternatives, ...)
     if "" != a:prompt
         let l:prompt=a:prompt
     else
@@ -97,8 +112,14 @@ function! <SID>_GaudiPrompt(prompt, alternatives)
 \           '"(" . v:val[0] . ")" . v:val[1:]')
         let l:prompt=join(l:prompt, ", ") . "? "
     endif
+    " check if we have a default value to present to the user
+    if a:0 > 0
+        let l:default=a:1
+    else
+        let l:default=""
+    endif
     " set up completion
-    let s:prompt_compl_alternatives=join(a:alternatives, "\n")
+    let s:prompt_compl_alternatives=a:alternatives
     " set up matching
     let l:matchlist=map(copy(a:alternatives), 'tolower(v:val)')
     " set up prompt to use
@@ -108,7 +129,7 @@ function! <SID>_GaudiPrompt(prompt, alternatives)
     while -1 == l:prompt_reply
         " prompt with completion
         call inputsave()
-        let l:prompt_reply=tolower(input(l:useprompt, "",
+        let l:prompt_reply=tolower(input(l:useprompt, l:default,
 \           "custom,_GaudiPromptCompl"))
         call inputrestore()
         " check against list of alternatives (case insensitive)
@@ -125,7 +146,7 @@ endfunction
 function! <SID>_GaudiAskType(type)
     if "" == a:type
         return <SID>_GaudiPrompt("Type of Gaudi entity " .
-\               "(Tab shows completions)? ",
+\               "(Tab shows completions): ",
 \               ["Algorithm", "DaVinciAlgorithm", "FunctionalAlgorithm",
 \               "Interface", "Tool"])
     else
@@ -135,19 +156,15 @@ endfunction
 
 " use supplied subtype, ask user if nothing supplied
 function! <SID>_GaudiAskSubtype(type, subtype)
-    if "" == a:subtype
-        if a:type =~ '^\(Algorithm\|DaVinciAlgorithm\|Tool\)'
-            return <SID>_GaudiPrompt("type of " . a:type . " " .
-\                  "(Tab shows completions): ",
-\                  ["Normal", "Histo", "Tuple" ])
-        elseif a:type =~ "^FunctionalAlgorithm"
-            return <SID>_GaudiPrompt("type of FunctionalAlgorithm " .
-\                  "(Tab shows completions): ",
-\                  ["Producer", "Consumer", "Transformer",
-\                  "MultiTransformer", "SplittingTransformer",
-\                  "MergingTransformer", "FilterPredicate",
-\                  "MultiTransformerFilter"])
-        endif
+    if a:type =~ '^\(Algorithm\|DaVinciAlgorithm\|Tool\)' && "" == a:subtype
+        return <SID>_GaudiPrompt("type of " . a:type . " " .
+\          "(Tab shows completions): ", ["Normal", "Histo", "Tuple" ])
+    elseif a:type =~ "^FunctionalAlgorithm"
+        return <SID>_GaudiPrompt("type of FunctionalAlgorithm " .
+\           "(Tab shows completions): ",
+\           ["Producer", "Consumer", "Transformer", "MultiTransformer",
+\           "SplittingTransformer", "MergingTransformer", "FilterPredicate",
+\           "MultiTransformerFilter"], a:subtype)
     else
         return a:subtype
     endif
@@ -155,12 +172,22 @@ endfunction
 
 " transform a type into a command line argument
 function! <SID>_GaudiType2CmdLine(type)
-    return "--type=" . a:type
+    if a:type =~ "^FunctionalAlgorithm"
+        return "--type=GaudiFunctionalAlgorithm"
+    else
+        return "--type=" . shellescape(a:type)
+    endif
 endfunction
 
 " transform a subtype to a command line argument
 function! <SID>_GaudiSubtype2CmdLine(type, subtype)
-    return "--AlgorithmType=" . a:subtype
+    if a:type =~ "^FunctionalAlgorithm"
+        return "--GaudiFunctional=" . shellescape(a:subtype)
+    elseif a:type =~ "^DaVinciAlgorithm"
+        return "--DaVinciAlgorithmType=" . shellescape(a:subtype)
+    elseif a:type =~ '^\(Algorithm\|Tool\)'
+        return "--AlgorithmType=" . shellescape(a:subtype)
+    endif
 endfunction
 
 " return the command line argument for headers or implementation files
@@ -172,18 +199,37 @@ function! <SID>_GaudiHeaderOrCpp2CmdLine(isheader)
     endif
 endfunction
 
+" return command line arguments for inputs/outputs of a FunctionalAlgorithm
+function! <SID>_GaudiIO2CmdLine(type, ios)
+    if a:type =~ "FunctionalAlgorithm"
+        return [ "--GaudiFunctionalInput=" . shellescape(a:ios['inputs']),
+\           "--GaudiFunctionalOutput=" . shellescape(a:ios['outputs']) ]
+    else
+        return []
+    endif
+endfunction
+
+" ask user which list of things (s)he wants
+function! <SID>_GaudiAskThings(things, default, askAnyway)
+    if "" != a:default && !a:askAnyway
+        return a:default
+    endif
+    call inputsave()
+    if a:askAnyway && "" != a:default
+        let l:defstr = ""
+    else
+        let l:defstr = " [default=none]"
+    endif
+    let l:retVal=input("semicolon-separated list of " . a:things .
+\       l:defstr . ": ". a:default)
+    call inputrestore()
+    return l:retVal
+endfunction
+
 " ask which interfaces a Tool/Algorithm/DaVinciAlgorithm should conform to
 function! <SID>_GaudiAskInterfaces(type, cmdline, interfaces)
     if a:type =~ '^Tool'
-        " no sensible default here, so we can use straight input
-        if "" != a:interfaces
-            let l:interfaces=a:interfaces
-        else
-            call inputsave()
-            let l:interfaces=input("semicolon-separated list of interfaces " .
-\               "[default=none]: ")
-            call inputrestore()
-        endif
+        let l:interfaces=<SID>_GaudiAskThings("interfaces", a:interfaces, 0)
         if "" == l:interfaces
             return a:cmdline + ["--Interface=" . shellescape(l:interfaces)]
         endif
@@ -191,8 +237,46 @@ function! <SID>_GaudiAskInterfaces(type, cmdline, interfaces)
     return a:cmdline
 endfunction
 
+" ask user for inputs and outputs in case of FunctionalAlgorithm
+function! <SID>_GaudiAskInputsOutputs(type, inputs, outputs)
+    if a:type != "FunctionalAlgorithm"
+        return {}
+    endif
+    let l:retVal = { 'inputs': <SID>_GaudiAskThings("input type(s)", a:inputs, 0),
+\       'outputs': <SID>_GaudiAskThings("output type(s)", a:outputs, 0) }
+    " strip trailing semicolons
+    return map(l:retVal, "substitute(v:val, ';\+$', '', '')")
+endfunction
+
+" guess functional algorithm type based on inputs and outputs
+function! <SID>_GaudiGuessFunctionalAlg(type, subtype, ios)
+    if "FunctionalAlgorithm" != a:type || "" != a:subtype
+        return a:subtype
+    endif
+    let l:inputs=a:ios['inputs']
+    let l:outputs=a:ios['outputs']
+    let l:nIn=len(split(l:inputs, ";"))
+    let l:nOut=len(split(l:outputs, ";"))
+    if 0 == l:nIn && 0 == l:nOut
+        " no functional algorithm fits, so ask user...
+        return ""
+    elseif 0 == l:nIn
+        return "Producer"
+    elseif 0 == l:nOut
+        return "Consumer"
+    elseif 1 == l:nOut && 0 < l:nIn
+        if l:outputs =~ '^\(bool\|Bool\|Bool_t\)$'
+            return "FilterPredicate"
+        else
+            return "Transformer"
+        endif
+    else
+        return "Multitransformer"
+    endif
+endfunction
+
 " the magic function that makes it all happen
-function! <SID>_GaudiTemplateBuildCmdLine(type, subtype, classname, interfaces)
+function! <SID>_GaudiTemplateBuildCmdLine(type, subtype, classname, interfaces, inputs, outputs)
     " at most one concurrent invocation - there may be race conditions, but
     " some protection is better than none... the point here is not to be
     " thread-safe, but to avoid that the routine gets stuck if the user calls
@@ -205,7 +289,9 @@ function! <SID>_GaudiTemplateBuildCmdLine(type, subtype, classname, interfaces)
     endif
     " ask or find out what we do not already know
     let l:type=<SID>_GaudiAskType(a:type)
-    let l:subtype=<SID>_GaudiAskSubtype(l:type, a:subtype)
+    let l:ios = <SID>_GaudiAskInputsOutputs(l:type, a:inputs, a:outputs)
+    let l:subtype=<SID>_GaudiGuessFunctionalAlg(l:type, a:subtype, l:ios)
+    let l:subtype=<SID>_GaudiAskSubtype(l:type, l:subtype)
     " get class name from buffer name, if not supplied by caller
     let l:classname=a:classname
     if "" == l:classname
@@ -219,11 +305,13 @@ function! <SID>_GaudiTemplateBuildCmdLine(type, subtype, classname, interfaces)
 \       <SID>_GaudiSubtype2CmdLine(l:type, l:subtype),
 \       <SID>_GaudiHeaderOrCpp2CmdLine(l:is_header) ]
     " add interfaces, if appropriate
+    let l:cmdline=l:cmdline + <SID>_GaudiIO2CmdLine(l:type, l:ios)
     let l:cmdline=<SID>_GaudiAskInterfaces(l:type, l:cmdline, a:interfaces)
     " append class name, and transform everything into a string
     let l:cmdline=join(l:cmdline + [shellescape(l:classname)])
-    " save current position in buffer
-    let l:savedline = line(".")
+    if 1 " debugging (for now)
+        echo "CMDLINE: " . l:cmdline
+    endif
     " call MakeLHCbCppClass to produce what should be inserted
     let l:lines=systemlist(l:cmdline)
     " remove spurious newlines on the list's elements
@@ -232,6 +320,8 @@ function! <SID>_GaudiTemplateBuildCmdLine(type, subtype, classname, interfaces)
     while "" == l:lines[len(l:lines) - 1]
         call remove(l:lines, len(l:lines) - 1)
     endwhile
+    " save current position in buffer
+    let l:savedline = line(".")
     " insert into current buffer
     call append(l:savedline - 1, l:lines)
     " restore position in buffer
@@ -245,17 +335,18 @@ call <SID>_GaudiFindPythonScript(expand("<sfile>"))
 " if successful, define user-facing commands...
 if exists("s:scriptpath")
     " define the commands the user can call
-    command! -nargs=0 GaudiAnything :call <SID>_GaudiTemplateBuildCmdLine("", "", "", "")
-    command! -nargs=0 GaudiAlgorithm :call <SID>_GaudiTemplateBuildCmdLine("Algorithm", "Normal", "", "")
-    command! -nargs=0 GaudiHistoAlg :call <SID>_GaudiTemplateBuildCmdLine("Algorithm", "Histo", "", "")
-    command! -nargs=0 GaudiTupleAlg :call <SID>_GaudiTemplateBuildCmdLine("Algorithm", "Tuple", "", "")
-    command! -nargs=0 GaudiTool :call <SID>_GaudiTemplateBuildCmdLine("Tool", "Normal", "", "")
-    command! -nargs=0 GaudiHistoTool :call <SID>_GaudiTemplateBuildCmdLine("Tool", "Histo", "", "")
-    command! -nargs=0 GaudiTupleTool :call <SID>_GaudiTemplateBuildCmdLine("Tool", "Tuple", "", "")
-    command! -nargs=0 DaVinciAlg :call <SID>_GaudiTemplateBuildCmdLine("DaVinciAlgorithm", "Normal", "", "")
-    command! -nargs=0 DaVinciHistoAlg :call <SID>_GaudiTemplateBuildCmdLine("DaVinciAlgorithm", "Histo", "", "")
-    command! -nargs=0 DaVinciTupleAlg :call <SID>_GaudiTemplateBuildCmdLine("DaVinciAlgorithm", "Tuple", "", "")
-    command! -nargs=0 GaudiInterface :call <SID>_GaudiTemplateBuildCmdLine("Interface", "", "", "")
+    command! -nargs=0 GaudiAnything :call <SID>_GaudiTemplateBuildCmdLine("", "", "", "", "", "")
+    command! -nargs=0 GaudiAlgorithm :call <SID>_GaudiTemplateBuildCmdLine("Algorithm", "Normal", "", "", "", "")
+    command! -nargs=0 GaudiHistoAlg :call <SID>_GaudiTemplateBuildCmdLine("Algorithm", "Histo", "", "", "", "")
+    command! -nargs=0 GaudiTupleAlg :call <SID>_GaudiTemplateBuildCmdLine("Algorithm", "Tuple", "", "", "", "")
+    command! -nargs=0 GaudiTool :call <SID>_GaudiTemplateBuildCmdLine("Tool", "Normal", "", "", "", "")
+    command! -nargs=0 GaudiHistoTool :call <SID>_GaudiTemplateBuildCmdLine("Tool", "Histo", "", "", "", "")
+    command! -nargs=0 GaudiTupleTool :call <SID>_GaudiTemplateBuildCmdLine("Tool", "Tuple", "", "", "", "")
+    command! -nargs=0 DaVinciAlg :call <SID>_GaudiTemplateBuildCmdLine("DaVinciAlgorithm", "Normal", "", "", "", "")
+    command! -nargs=0 DaVinciHistoAlg :call <SID>_GaudiTemplateBuildCmdLine("DaVinciAlgorithm", "Histo", "", "", "", "")
+    command! -nargs=0 DaVinciTupleAlg :call <SID>_GaudiTemplateBuildCmdLine("DaVinciAlgorithm", "Tuple", "", "", "", "")
+    command! -nargs=0 GaudiInterface :call <SID>_GaudiTemplateBuildCmdLine("Interface", "", "", "", "", "")
+    command! -nargs=0 GaudiFunctional :call <SID>_GaudiTemplateBuildCmdLine("FunctionalAlgorithm", "", "", "", "", "")
 endif
 
 " vim: sw=4:tw=78:ft=vim:et
