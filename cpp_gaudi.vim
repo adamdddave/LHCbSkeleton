@@ -124,6 +124,11 @@ endfunction
 "
 " this routine does all the heavy lifting when the user is required to select
 " among several alternatives
+" arguments:
+" @param prompt                 prompt to show to the user
+" @param alternatives           list of valid answers
+" @param[optional] default      default to present (can be empty/absent)
+" @param[optional] askAnyway    whether to ask user if there is a default
 function! <SID>_GaudiPrompt(prompt, alternatives, ...)
     if "" != a:prompt
         let l:prompt=a:prompt
@@ -135,35 +140,46 @@ function! <SID>_GaudiPrompt(prompt, alternatives, ...)
     " check if we have a default value to present to the user
     if a:0 > 0
         let l:default=a:1
+        if a:0 > 1
+            let l:askAnyway=a:2
+        else
+            let l:askAnyway=0
+        endif
     else
         let l:default=""
+        let l:askAnyway = 0
     endif
-    " set up completion - save old completion parameters
-    let l:prompt_compl_alternatives_save = s:prompt_compl_alternatives
-    try " set new completion, and ask user - cleanup in finally below
-        let s:prompt_compl_alternatives=a:alternatives
-        " set up matching
-        let l:matchlist=map(copy(a:alternatives), 'tolower(v:val)')
-        " set up prompt to use
-        let l:useprompt=l:prompt
-        " ask user until they provide a reasonable answer
-        let l:prompt_reply=-1
-        while -1 == l:prompt_reply
-            " prompt with completion
-            call inputsave()
-            let l:prompt_reply=tolower(input(l:useprompt, l:default,
-                        \           "custom,_GaudiPromptCompl"))
-            call inputrestore()
-            " check against list of alternatives (case insensitive)
-            let l:prompt_reply=match(l:matchlist, "^" . l:prompt_reply)
-            " assume user botched it
-            let l:useprompt="try again: " . l:prompt
-        endwhile
-        " user provided valid choice - go to pretty format
-        let l:prompt_reply=get(a:alternatives, l:prompt_reply)
-    finally " restore old set of completion
-        let s:prompt_compl_alternatives = l:prompt_compl_alternatives_save
-    endtry
+    " check if the default is already good enough, or if we need to ask anyway
+    if ("" == l:default && "" == get(a:alternatives, l:default, "")) || l:askAnyway
+        " set up completion - save old completion parameters
+        let l:prompt_compl_alternatives_save = s:prompt_compl_alternatives
+        try " set new completion, and ask user - cleanup in finally below
+            let s:prompt_compl_alternatives=a:alternatives
+            " set up matching
+            let l:matchlist=map(copy(a:alternatives), 'tolower(v:val)')
+            " set up prompt to use
+            let l:useprompt=l:prompt
+            " ask user until they provide a reasonable answer
+            let l:prompt_reply=-1
+            while -1 == l:prompt_reply
+                " prompt with completion
+                call inputsave()
+                let l:prompt_reply=tolower(input(l:useprompt, l:default,
+                            \           "custom,_GaudiPromptCompl"))
+                call inputrestore()
+                " check against list of alternatives (case insensitive)
+                let l:prompt_reply=match(l:matchlist, "^" . l:prompt_reply)
+                " assume user botched it first time around
+                let l:useprompt="try again: " . l:prompt
+            endwhile
+            " user provided valid choice - go to pretty format
+            let l:prompt_reply=get(a:alternatives, l:prompt_reply)
+        finally " restore old set of completions
+            let s:prompt_compl_alternatives = l:prompt_compl_alternatives_save
+        endtry
+    else
+        let l:prompt_reply=l:default
+    endif
     return l:prompt_reply
 endfunction
 
@@ -226,7 +242,8 @@ function! <SID>_GaudiAskSubtype(dict)
     if l:dict['type'] =~ '^\(Algorithm\|DaVinciAlgorithm\|Functional\|Tool\)'
         let l:dict['subtype'] = <SID>_GaudiPrompt(
 \           'subtype of ' . l:dict['type'] . ' (Tab for completions): ',
-\           s:GaudiSubtypes[l:dict['type']], get(l:dict, 'subtype', ''))
+\           s:GaudiSubtypes[l:dict['type']], get(l:dict, 'subtype', ''),
+\           l:dict['type'] =~ '^Functional')
     endif
     return l:dict
 endfunction
