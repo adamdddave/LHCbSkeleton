@@ -244,7 +244,9 @@ function! s:GaudiAskThings(things, default, askAnyway)
     let l:retVal=s:GaudiPrompt("semicolon-separated list of " . a:things .
 \       l:defstr . ": ", l:alternatives, a:default, a:askAnyway, 1)
     " register the user's reply for next time
-    let s:compldict[l:things][l:retVal] = 1
+    for l:val in split(l:retVal, ';')
+        let s:compldict[l:things][l:val] = 1
+    endfor
     return l:retVal
 endfunction
 
