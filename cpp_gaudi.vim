@@ -44,6 +44,11 @@
 " @date 2017-04-04
 " - code cleanups, add machinery to find the MakeLHCbCppClass.py script
 "   automagically
+" @date 2017-04-07
+" - after much hacking, we now have a relatively clean script, that seems to
+"   behave okay in my tests
+" - Interfaces for Tools and inputs/outputs for Functional algorithms are
+"   remembered, and offered as completion alternatives on subsequent runs
 "
 " @note This script builds on ideas in earlier work by Kurt Rinnert who
 " 'rolled his own' at some point in the past which has been passed around by
@@ -77,6 +82,13 @@ let s:GaudiCmdLineTypeMap={ 'DaVinciAlg': 'DaVinciAlgorithm',
 let s:GaudiCmdLineSubtypeOptionMap={ 'DaVinciAlg': '--DaVinciAlgorithmType',
 \           'Functional': '--GaudiFunctional', 'Algorithm': '--AlgorithmType',
 \           'Tool': '--AlgorithmType'}
+" dictionary to remap completion dictionary types:
+" [for GaudiFunctional, inputs and outputs are completed from the same pool of
+" suggestions]
+let s:compldictRemap={'output type(s)': 'input type(s)'}
+" completion dictionary for inputs, outputs, interfaces
+" [vim learns what the user uses in a session]
+let s:compldict={ 'input type(s)': {}, 'interfaces': {} }
 
 " little helper to search for the python part in a few reasonable places
 function! s:GaudiFindPythonScript(vimscriptpath)
@@ -139,6 +151,7 @@ endfunction
 " @param alternatives           list of valid answers
 " @param[optional] default      default to present (can be empty/absent)
 " @param[optional] askAnyway    whether to ask user if there is a default
+" @param[optional] doNotEnforce enforce that choice is among alternatives (no)
 function! s:GaudiPrompt(prompt, alternatives, ...)
     if "" != a:prompt
         let l:prompt=a:prompt
@@ -148,16 +161,17 @@ function! s:GaudiPrompt(prompt, alternatives, ...)
         let l:prompt=join(l:prompt, ", ") . "? "
     endif
     " check if we have a default value to present to the user
+    let l:default=""
+    let l:askAnyway = 0
+    let l:doNotEnforce = 0
     if a:0 > 0
         let l:default=a:1
         if a:0 > 1
             let l:askAnyway=a:2
-        else
-            let l:askAnyway=0
+            if a:0 > 2
+                let l:doNotEnforce=a:3
+            endif
         endif
-    else
-        let l:default=""
-        let l:askAnyway = 0
     endif
     " check if the default is already good enough, or if we need to ask anyway
     if "" == l:default || "" == get(a:alternatives, l:default, "") || l:askAnyway
@@ -180,16 +194,21 @@ function! s:GaudiPrompt(prompt, alternatives, ...)
             while -1 == l:prompt_reply
                 " prompt with completion
                 call inputsave()
-                let l:prompt_reply=tolower(input(l:useprompt, l:default,
-\                   "custom," . s:complfunc))
+                let l:prompt_reply=input(l:useprompt, l:default,
+\                   "custom," . s:complfunc)
                 call inputrestore()
-                " check against list of alternatives (case insensitive)
-                let l:prompt_reply=match(l:matchlist, "^" . l:prompt_reply)
-                " assume user botched it first time around
-                let l:useprompt="try again: " . l:prompt
+                if !l:doNotEnforce
+                    let l:prompt_reply=tolower(l:prompt_reply)
+                    " check against list of alternatives (case insensitive)
+                    let l:prompt_reply=match(l:matchlist, "^" . l:prompt_reply)
+                    " assume user botched it first time around
+                    let l:useprompt="try again: " . l:prompt
+                endif
             endwhile
-            " user provided valid choice - go to pretty format
-            let l:prompt_reply=get(a:alternatives, l:prompt_reply)
+            if !l:doNotEnforce
+                " user provided valid choice - go to pretty format
+                let l:prompt_reply=get(a:alternatives, l:prompt_reply)
+            endif
         finally " restore old set of completions
             if type(l:prompt_compl_alternatives_save) == type("")
                 " restore previous value
@@ -210,15 +229,24 @@ function! s:GaudiAskThings(things, default, askAnyway)
     if "" != a:default && !a:askAnyway
         return a:default
     endif
-    call inputsave()
+    " remap things if needed...
+    let l:things=get(s:compldictRemap, a:things, a:things)
+    " ... and get the completion dictionary; build up list of previously used
+    " things
+    let l:alternatives=sort(keys(s:compldict[l:things]))
+    " make a builtin default
     if a:askAnyway && "" != a:default
         let l:defstr = ""
     else
         let l:defstr = " [default=none]"
     endif
-    let l:retVal=input("semicolon-separated list of " . a:things .
-\       l:defstr . ": ". a:default)
-    call inputrestore()
+    " pop the question
+    let l:retVal=s:GaudiPrompt("semicolon-separated list of " . a:things .
+\       l:defstr . ": ", l:alternatives, a:default, a:askAnyway, 1)
+    " register the user's reply for next time
+    for l:val in split(l:retVal, ';')
+        let s:compldict[l:things][l:val] = 1
+    endfor
     return l:retVal
 endfunction
 
@@ -242,7 +270,7 @@ function! s:GaudiAskInterfaces(dict)
     return l:dict
 endfunction
 
-" ask user for inputs and outputs in case of FunctionalAlgorithm
+" ask user for inputs and outputs in case of GaudiFunctional
 function! s:GaudiAskInputsOutputs(dict)
     let l:dict = a:dict
     if l:dict['type'] =~ '^Functional'
