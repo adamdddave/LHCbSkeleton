@@ -23,8 +23,10 @@ def make_files(options,name):
     options.HeaderOnly=False
     if '.cpp' in name:
         options.cppOnly = True
+        name = name.split('.cpp')[0]
     if '.h' in name:
         options.HeaderOnly = True
+        name = name.split('.h')[0]
     #case of no .cpp or h given
         #print 'parsing .cpp'
     ####Type parsing. 
