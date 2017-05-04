@@ -10,7 +10,7 @@ from LHCbHeader import LHCbHeader
 from LHCbCpp import LHCbCpp
 from support import * #doxyComment,comment,exists
 #possibilities
-headerConfigs= { 'algorithm': ['Algorithm','GaudiFunctionalAlgorithm','DaVinciAlgorithm','Tool','Interface','simple'],
+headerConfigs= { 'algorithm': ['A (Algorithm)','GFA (GaudiFunctionalAlgorithm)','DVA (DaVinciAlgorithm)','T (Tool)','I (Interface)','simple'],
                  'DVtype' : ['Normal','Histo','Tuple'],
                  'GFtype' : ['Producer','Consumer','Transformer','MultiTransformer'],#,'SplittingTransformer','MergingTransformer','FilterPredicate','MultiTransformerFilter'
                  'NAtype' : ['Normal','Histo','Tuple'],

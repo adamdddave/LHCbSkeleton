@@ -51,7 +51,7 @@ class LHCbCpp:
                 else:
                     ret+='\tdeclareInterface<%s>(this);\n'%self.configs.Interface
                 ret+='\n}\n\n'
-            else: pass
+            else: ret+='\n\n'
             #destructor
             ret+=comment('Destructor',sep='=')
             ret+='%s::~%s() {} \n\n'%(self.name,self.name)
