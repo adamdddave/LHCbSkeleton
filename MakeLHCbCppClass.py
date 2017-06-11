@@ -135,10 +135,10 @@ def make_files(options,name):
             print 'input unknown option! cannot parse!'
             sys.exit()
     #good to go, make some useful things:
-    print 'dumping info'
-    print 'options = ', options
+    #print 'dumping info'
+    #print 'options = ', options
     #print 'btype = ', btype
-    print 
+    #print 
 #    print 'now using options',options
     thing = LHCbHeader(name,options)
     # print '-'*50
