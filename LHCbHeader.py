@@ -9,7 +9,7 @@ class LHCbHeader:
 
     
     def genHeader(self):        
-        retstr = "#pragma once\n// from Gaudi\n"
+        retstr = "#pragma once\n\n// Include Files\n\n"
         incl = '#include "%s.h"\n'
         if self.configs.type == 'GFA': 
             incl = incl%('GaudiAlg/'+self.configs.GaudiFunctional)
@@ -35,24 +35,24 @@ class LHCbHeader:
         return retstr
     
     def makebody(self):
-        retstr = 'class %s : '%self.name
-        if self.configs.type=='DaVinciAlgortihm':
-            sub_str = 'public DaVinci%sAlgorithm {\n'%(self.configs.DaVinciAlgorithmType if not self.configs.DaVinciAlgorithmType=='Normal' else '')
+        retstr = 'class %s '%self.name
+        if self.configs.type=='DVA':
+            sub_str = ' : public DaVinci%sAlgorithm {\n'%(self.configs.DaVinciAlgorithmType if not self.configs.DaVinciAlgorithmType=='Normal' else '')
             retstr+=substr
         elif self.configs.type=='A': 
-            sub_str = 'public Gaudi%s {\n'%('%sAlg'%(self.configs.AlgorithmType) if not self.configs.AlgorithmType == 'Normal' else 'Algorithm ')
+            sub_str = ' : public Gaudi%s {\n'%('%sAlg'%(self.configs.AlgorithmType) if not self.configs.AlgorithmType == 'Normal' else 'Algorithm ')
             retstr+=sub_str
         elif self.configs.type=='I':
-            sub_str = 'virtual public IAlgTool {\n'
+            sub_str = ' : virtual public IAlgTool {\n'
             retstr+=sub_str
         elif self.configs.type=='T':
-            sub_str = 'public GaudiTool'
+            sub_str = ' : public GaudiTool'
             if not self.configs.Interface ==None:
                 sub_str+=', virtual public %s'%self.configs.Interface
             sub_str+=' {\n'
             retstr+=sub_str
         elif self.configs.type=='GFA':
-            substr = 'public Gaudi::Functional::%s<%s(%s)>{\n'%(self.configs.GaudiFunctional,self.configs.GaudiFunctionalOutput, self.configs.GaudiFunctionalInput)
+            substr = ' : public Gaudi::Functional::%s<%s(%s)>{\n'%(self.configs.GaudiFunctional,self.configs.GaudiFunctionalOutput, self.configs.GaudiFunctionalInput)
             retstr+=substr
         else: retstr+='\n'
         

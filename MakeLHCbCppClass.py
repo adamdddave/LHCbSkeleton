@@ -2,7 +2,7 @@
 # What:  python tool to replace emacs template for LHCb Algorithms
 # Author: Adam Davis
 # Date: 29/03/2017
-# Updated: 02/05/2017
+# Updated: 11/06/2017
 
 import sys,os,pwd,time
 from optparse import OptionParser
@@ -19,13 +19,13 @@ headerConfigs= { 'algorithm': ['A (Algorithm)','GFA (GaudiFunctionalAlgorithm)',
 def make_files(options,name):
     ###parse the name.
     #print 'name = ',name
-    options.cppOnly = False
-    options.HeaderOnly=False
+    options.cpp = False
+    options.Header=False
     if '.cpp' in name:
-        options.cppOnly = True
+        options.cpp = True
         name = name.split('.cpp')[0]
     if '.h' in name:
-        options.HeaderOnly = True
+        options.Header = True
         name = name.split('.h')[0]
     #case of no .cpp or h given
         #print 'parsing .cpp'
@@ -35,10 +35,10 @@ def make_files(options,name):
         atype = raw_input("Create Algorithm, DaVinciAlgorithm, GaudiFunctionalAlgorithm, Tool, Interface or simple class  A/D/F/T/I/[no] : ").upper()#upper to break possible problems
         if atype=='A':
             options.type = 'A'
-        elif atype=='F':
-            options.type = 'GFA'
         elif atype=='D':
             options.type = 'DVA'
+        elif atype=='F':
+            options.type = 'GFA'
         elif atype=='T':
             options.type = 'T'
             if options.Interface==None:
@@ -144,7 +144,7 @@ def make_files(options,name):
     # print '-'*50
     # print 'Generating header'
     # print '-'*50
-    if options.HeaderOnly==True and not exists(name+'.h'):
+    if options.Header==True and not exists(name+'.h'):
         ret = thing.genHeader()
         ret+= doxyComment(first=True, text = name)
         ret+= thing.makebody()
@@ -158,7 +158,7 @@ def make_files(options,name):
     # print 'Generating cpp'
     # print '-'*50
     thing2 = LHCbCpp(name,options)
-    if options.cppOnly==True and not exists(name+'.cpp'):
+    if options.cpp==True and not exists(name+'.cpp'):
         # if options.write==True:
 #             f_dot_cpp = open(name+'.cpp','w')
 #             f_dot_cpp.write(thing2.genText())
@@ -170,9 +170,9 @@ def make_files(options,name):
 #classes for header and .cpp file.
 
 if __name__ == "__main__":
-#     if (os.isatty(0)) : print "stdin is a tty"
-#     if (os.isatty(1)) : print "stdout is a tty"
-#     if (os.isatty(2)) : print "stderr is a tty"
+    # if (os.isatty(0)) : print "stdin is a tty"
+    # if (os.isatty(1)) : print "stdout is a tty"
+    # if (os.isatty(2)) : print "stderr is a tty"
 
     usage = "usage: %prog [options] name"
     parser = OptionParser( usage = usage )
@@ -184,8 +184,8 @@ if __name__ == "__main__":
     parser.add_option('-T','--Tool', action='store',help = 'Tool (can also provide -i flag too)')
     parser.add_option('-i','--GaudiFunctionalInput',action='append',help='Input for Gaudi Functional Algorithm')
     parser.add_option('-o','--GaudiFunctionalOutput',action='append',help='Output for Gaudi Functional Algorithm')
-    # parser.add_option('-H','--HeaderOnly',action='store_true',help='Only generate the header')
-#     parser.add_option('-C','--cppOnly',action='store_true',help='Only generate the .cpp implementation')
+    #parser.add_option('-H','--Header',action='store_true',help=' generate the header')
+    #parser.add_option('-C','--cpp',action='store_true',help=' generate the .cpp implementation')
     #parser.add_option('-W','--write', action='store_true',help='Use the python script to write the output')
     (options, args) = parser.parse_args()
     if len(args)==0: 

@@ -2,14 +2,15 @@
 #helpers
 import sys,os,pwd,time
 def doxyComment(text='',first = False):
-    retstr = "/**\n"
+    retstr = "/*"
     if first==True:
-        retstr+='* @class %s %s.h %s\n'%(text, text, text)
+        cwd = os.getcwd().split('/')[-1]
+        retstr+='* @class %s %s.h %s\n'%(text, text, cwd+'/'+text)
     else: retstr+= "* %s\n"%text
-    retstr+= "*\n"*3
+    retstr+= "*\n"*2
     if first==True:
         retstr+= "* @author %s\n"%(pwd.getpwuid(os.getuid())[4])
-        retstr+= "* @date   %s\n"%(time.strftime("%d/%m/%Y"))
+        retstr+= "* @date   %s\n"%(time.strftime("%Y-%m-%d"))
     retstr+="*/\n"
     return retstr
 def comment(text='',sep = '-',isFinal=False):
