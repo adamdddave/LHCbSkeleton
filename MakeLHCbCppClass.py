@@ -33,7 +33,9 @@ def make_files(options,name):
     ###check for no options given
     if options.type==None:
         atype = raw_input("Create Algorithm, DaVinciAlgorithm, GaudiFunctionalAlgorithm, Tool, Interface or simple class  A/D/F/T/I/[no] : ").upper()#upper to break possible problems
-        if atype=='A':
+        if atype=='':
+            options.type='S'
+        elif atype=='A':
             options.type = 'A'
         elif atype=='D':
             options.type = 'DVA'
