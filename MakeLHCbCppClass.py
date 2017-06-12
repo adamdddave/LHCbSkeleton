@@ -43,16 +43,19 @@ def make_files(options,name):
             options.type = 'GFA'
         elif atype=='T':
             options.type = 'T'
-            if options.Interface==None:
+            if options.Interface==None and options.isTTY==True:
                 itype = raw_input("Interface name (blank = not using an interface) : ")
                 if itype=='': itype = None
                 options.Interface=itype
+            else:
+                options.Interface=None
         elif atype=='I':
             options.type = 'I'
         else:
             options.type = 'S'
     #type parsing
-    elif options.type=='T' and options.Interface==None: #TODO add interface="" exception
+    elif options.type=='T' and options.Interface==None and options.isTTY==True:
+#TODO add interface="" exception
         itype = raw_input("Interface name (blank = not using an interface) : ")
         options.Interface=itype
     else: pass
@@ -190,10 +193,9 @@ if __name__ == "__main__":
     #parser.add_option('-C','--cpp',action='store_true',help=' generate the .cpp implementation')
     #parser.add_option('-W','--write', action='store_true',help='Use the python script to write the output')
     (options, args) = parser.parse_args()
+    options.isTTY = (os.isatty(0)) and (os.isatty(1)) and (os.isatty(2))
     if len(args)==0: 
         print 'need a class name!'
         sys.exit()
-    #todo: parse length of input and output to determine type
-    #pass
     make_files(options,args[0])
 
