@@ -151,8 +151,8 @@ def make_files(options,name):
         elif options.DaVinciAlgorithmType=="T": options.DaVinciAlgorithmType='Tuple'
         elif options.DaVinciAlgorithmType=="N": options.DaVinciAlgorithmType='Normal'
     #good to go, make some useful things:
-    print 'dumping info'
-    print 'options = ', options
+    # print 'dumping info'
+    # print 'options = ', options
     #print 'btype = ', btype
     # print 
 #    print 'now using options',options
@@ -204,10 +204,10 @@ if __name__ == "__main__":
     #parser.add_option('-C','--cpp',action='store_true',help=' generate the .cpp implementation')
     #parser.add_option('-W','--write', action='store_true',help='Use the python script to write the output')
     (options, args) = parser.parse_args()
-    print '*'*50
-    print options
-    print args
-    print '*'*50
+    # print '*'*50
+    # print options
+    # print args
+    # print '*'*50
     options.isTTY = (os.isatty(0)) and (os.isatty(1)) and (os.isatty(2))
     if len(args)==0: 
         print 'need a class name!'
