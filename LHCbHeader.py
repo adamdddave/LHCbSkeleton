@@ -38,7 +38,7 @@ class LHCbHeader:
         retstr = 'class %s '%self.name
         if self.configs.type=='DVA':
             sub_str = ' : public DaVinci%sAlgorithm {\n'%(self.configs.DaVinciAlgorithmType if not self.configs.DaVinciAlgorithmType=='Normal' else '')
-            retstr+=substr
+            retstr+=sub_str
         elif self.configs.type=='A': 
             sub_str = ' : public Gaudi%s {\n'%('%sAlg'%(self.configs.AlgorithmType) if not self.configs.AlgorithmType == 'Normal' else 'Algorithm ')
             retstr+=sub_str

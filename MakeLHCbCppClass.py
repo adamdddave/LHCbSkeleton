@@ -30,7 +30,7 @@ def make_files(options,name):
     #case of no .cpp or h given
         #print 'parsing .cpp'
     ####Type parsing. 
-    ###check for no options given
+    ##NOTE: This is really only supported for command line, e.g. tty
     if options.type==None:
         atype = raw_input("Create Algorithm, DaVinciAlgorithm, GaudiFunctionalAlgorithm, Tool, Interface or simple class  A/D/F/T/I/[no] : ").upper()#upper to break possible problems
         if atype=='':
@@ -123,27 +123,38 @@ def make_files(options,name):
     ###parse normal/davinci settings
     
     ##algorithm settings
-    if options.type=='A' and options.AlgorithmType==None:
-        btype = raw_input("Normal, Histo or Tuple [N]/H/T :")
-        if btype =='' or btype == 'N': options.AlgorithmType='Normal'
-        elif btype=='H': options.AlgorithmType='Histo'
-        elif btype=='T': options.AlgorithmType='Tuple'
-        else: 
-            print 'input unknown option! cannot parse!'
-            sys.exit()
-    if options.type=='DVA' and options.DaVinciAlgorithmType==None:
-        btype = raw_input("Normal, Histo or Tuple [N]/H/T :")
-        if btype =='' or btype == 'N': options.DaVinciAlgorithmType='Normal'
-        elif btype=='H': options.DaVinciAlgorithmType='Histo'
-        elif btype=='T': options.DaVinciAlgorithmType='Tuple'
-        else: 
-            print 'input unknown option! cannot parse!'
-            sys.exit()
+    if options.type=='A':
+        if options.AlgorithmType==None and options.isTTY == True:
+            btype = raw_input("Normal, Histo or Tuple [N]/H/T :")
+            if btype =='' or btype == 'N': options.AlgorithmType='Normal'
+            elif btype=='H': options.AlgorithmType='Histo'
+            elif btype=='T': options.AlgorithmType='Tuple'
+            else: 
+                print 'input unknown option! cannot parse!'
+                sys.exit()
+        elif options.AlgorithmType==None and isTTY==False: options.AlgorithmType='Normal'
+        elif options.AlgorithmType=='H': options.AlgorithmType='Histo'
+        elif options.AlgorithmType=='T': options.AlgorithmType='Tuple'
+        elif options.AlgorithmType=='N': options.AlgorithmType='Normal'
+    if options.type=='DVA':
+        if options.DaVinciAlgorithmType==None and options.isTTY==True:
+            btype = raw_input("Normal, Histo or Tuple [N]/H/T :")
+            if btype =='' or btype == 'N': options.DaVinciAlgorithmType='Normal'
+            elif btype=='H': options.DaVinciAlgorithmType='Histo'
+            elif btype=='T': options.DaVinciAlgorithmType='Tuple'
+            else: 
+                print 'input unknown option! cannot parse!'
+                sys.exit()
+        elif options.DaVinciAlgorithmType==None and options.isTTY==False:
+            options.DaVinciAlgorithmType='Normal'
+        elif options.DaVinciAlgorithmType=="H": options.DaVinciAlgorithmType='Histo'
+        elif options.DaVinciAlgorithmType=="T": options.DaVinciAlgorithmType='Tuple'
+        elif options.DaVinciAlgorithmType=="N": options.DaVinciAlgorithmType='Normal'
     #good to go, make some useful things:
-    #print 'dumping info'
-    #print 'options = ', options
+    print 'dumping info'
+    print 'options = ', options
     #print 'btype = ', btype
-    #print 
+    # print 
 #    print 'now using options',options
     thing = LHCbHeader(name,options)
     # print '-'*50
@@ -193,6 +204,10 @@ if __name__ == "__main__":
     #parser.add_option('-C','--cpp',action='store_true',help=' generate the .cpp implementation')
     #parser.add_option('-W','--write', action='store_true',help='Use the python script to write the output')
     (options, args) = parser.parse_args()
+    print '*'*50
+    print options
+    print args
+    print '*'*50
     options.isTTY = (os.isatty(0)) and (os.isatty(1)) and (os.isatty(2))
     if len(args)==0: 
         print 'need a class name!'
