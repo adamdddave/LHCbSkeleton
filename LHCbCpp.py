@@ -20,7 +20,7 @@ class LHCbCpp:
         ret+= '#include "%s.h"\n'%self.name
         ret+= comment('Implementation file for class : %s\n//\n// %s : %s'%(self.name,
                                                                             time.strftime("%d/%m/%Y"),
-                                                                            pwd.getpwuid(os.getuid())[4]))
+                                                                            (pwd.getpwuid(os.getuid())[4]).split(',')[0]))
         if self.configs.type=='A' or self.configs.type=='DVA' or self.configs.type=='GFA':
             ret+='// Declaration of the Algorithm Factory\nDECLARE_ALGORITHM_FACTORY( %s )\n\n\n'%self.name
 

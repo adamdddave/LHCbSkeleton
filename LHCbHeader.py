@@ -20,7 +20,7 @@ class LHCbHeader:
         elif self.configs.type=='I':
             retstr+='\n// from STL\n#include <string>\n\n'
             incl = incl%('GaudiAlg/IAlgTool')
-            incl+='static const InterfaceID IID_%s" ( "%s", 1, 0 );\n'%(self.name,self.name)
+            incl+='static const InterfaceID IID_%s ( "%s", 1, 0 );\n'%(self.name,self.name)
         elif self.configs.type=='DVA':
             incl = incl%('Kernel/DaVinci%sAlgorithm'%(self.configs.DaVinciAlgorithmType if not self.configs.DaVinciAlgorithmType=='Normal' else ''))
         elif self.configs.type=='A':
@@ -37,25 +37,24 @@ class LHCbHeader:
     def makebody(self):
         retstr = 'class %s '%self.name
         if self.configs.type=='DVA':
-            sub_str = ' : public DaVinci%sAlgorithm {\n'%(self.configs.DaVinciAlgorithmType if not self.configs.DaVinciAlgorithmType=='Normal' else '')
+            sub_str = ' : public DaVinci%sAlgorithm '%(self.configs.DaVinciAlgorithmType if not self.configs.DaVinciAlgorithmType=='Normal' else '')
             retstr+=sub_str
         elif self.configs.type=='A': 
-            sub_str = ' : public Gaudi%s {\n'%('%sAlg'%(self.configs.AlgorithmType) if not self.configs.AlgorithmType == 'Normal' else 'Algorithm ')
+            sub_str = ' : public Gaudi%s '%('%sAlg'%(self.configs.AlgorithmType) if not self.configs.AlgorithmType == 'Normal' else 'Algorithm ')
             retstr+=sub_str
         elif self.configs.type=='I':
-            sub_str = ' : virtual public IAlgTool {\n'
+            sub_str = ' : virtual public IAlgTool '
             retstr+=sub_str
         elif self.configs.type=='T':
             sub_str = ' : public GaudiTool'
             if not self.configs.Interface ==None:
                 sub_str+=', virtual public %s'%self.configs.Interface
-            sub_str+=' {\n'
             retstr+=sub_str
         elif self.configs.type=='GFA':
-            substr = ' : public Gaudi::Functional::%s<%s(%s)>{\n'%(self.configs.GaudiFunctional,self.configs.GaudiFunctionalOutput, self.configs.GaudiFunctionalInput)
-            retstr+=substr
-        else: retstr+='\n'
-        
+            substr = ' : public Gaudi::Functional::%s<%s(%s)> '%(self.configs.GaudiFunctional,self.configs.GaudiFunctionalOutput, self.configs.GaudiFunctionalInput)
+            retstr+=sub_str
+        else: retstr+=''
+        retstr+='{\n'
         #constructors
         retstr+='public:\n'
         if self.configs.type=='GFA':

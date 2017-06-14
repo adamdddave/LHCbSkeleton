@@ -9,7 +9,7 @@ def doxyComment(text='',first = False):
     else: retstr+= "* %s\n"%text
     retstr+= "*\n"*2
     if first==True:
-        retstr+= "* @author %s\n"%(pwd.getpwuid(os.getuid())[4])
+        retstr+= "* @author %s\n"%((pwd.getpwuid(os.getuid())[4]).split(',')[0])
         retstr+= "* @date   %s\n"%(time.strftime("%Y-%m-%d"))
     retstr+="*/\n"
     return retstr
