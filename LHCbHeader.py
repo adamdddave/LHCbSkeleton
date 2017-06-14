@@ -78,7 +78,8 @@ class LHCbHeader:
             if not self.configs.Interface==None:
                 retstr+='\t// Return the interface ID \n\tstatic const InterfaceID& interfaceID() { return IID_%s; }\n\n'%self.name
             retstr+='\t/// Standard constructor\n\t%s( const std::string& type,\n\t%sconst std::string& name,\n\t%sconst IInterface* parent);'%(self.name,' '*(len(self.name)+2),' '*(len(self.name)+2))            
-
+        elif self.configs.type=='S':
+            retstr+='\t/// Standard Constructor\n\t%s( );\n'%(self.name)
         else:
             retstr+='\t/// Standard constructor\n\t%s( const std::string& name, ISvcLocator* pSvcLocator );\n'%(self.name)
         
