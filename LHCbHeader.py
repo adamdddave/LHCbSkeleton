@@ -51,7 +51,7 @@ class LHCbHeader:
                 sub_str+=', virtual public %s'%self.configs.Interface
             retstr+=sub_str
         elif self.configs.type=='GFA':
-            substr = ' : public Gaudi::Functional::%s<%s(%s)> '%(self.configs.GaudiFunctional,self.configs.GaudiFunctionalOutput, self.configs.GaudiFunctionalInput)
+            sub_str = ' : public Gaudi::Functional::%s<%s(%s)> '%(self.configs.GaudiFunctional,self.configs.GaudiFunctionalOutput, self.configs.GaudiFunctionalInput)
             retstr+=sub_str
         else: retstr+=''
         retstr+='{\n'

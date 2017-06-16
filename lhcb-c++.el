@@ -230,7 +230,7 @@ is displayed"
 (if is-gaudi-functional (let ((alg-type (upcase (read-string "Transformer, Producer, Consumer, MultiTransformer [T]/P/C/M : "))))
 			  (setq gfa-type alg-type )
 			  (setq is-plain-gfa (string= "" alg-type))
-			  (if (string= "" alg-type) (setq atype "T"))
+			  (if (string= "" alg-type) (setq gfa-type "T"))
 			  nil
 			  )
   
