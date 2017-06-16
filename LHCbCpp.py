@@ -94,20 +94,17 @@ class LHCbCpp:
                     algtype = 'DaVinci%s'%(self.configs.DaVinciAlgorithmType if not self.configs.DaVinciAlgorithmType=='Normal' else '')+algtype
                 ret+='\treturn %s::finalize();\n'%algtype
                 ret+='}\n\n'
-
+        
         #gaudi functional
         else:
             ret+='\n'
             ret+=comment('operator () implementation',sep='=')
             inputstr = ''
             counter = 1;
-            inputstr=''
-            for thing in self.configs.GaudiFunctionalInput.split(','):
-                inputstr = thing+' input%s'%counter
-                if not thing ==self.configs.GaudiFunctionalInput.split(',')[-1]:
-                    inputstr+=', '
-                counter+=1
-            ret+='%s %s::operator() (%s) const {\n\n'%(self.configs.GaudiFunctionalOutput, self.name, inputstr)
+            if not self.configs.GaudiFunctional=='Producer':
+                ret+='%s %s::operator() (const %s) const {\n\n'%(self.configs.GaudiFunctionalOutput, self.name, self.configs.GaudiFunctionalInput)
+            else:
+                ret+='%s %s::operator() () const {\n\n'%(self.configs.GaudiFunctionalOutput, self.name)
             retstr = ''
             if not self.configs.GaudiFunctional=='Consumer':
                 ret+='\t %s ret;\n'%self.configs.GaudiFunctionalOutput

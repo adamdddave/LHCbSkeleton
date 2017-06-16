@@ -178,8 +178,8 @@ if __name__ == "__main__":
     parser.add_option('-a','--AlgorithmType',action='store',help = 'Normal Algorithm type %s'%headerConfigs['NAtype'])
     parser.add_option('-I','--Interface', action='store', help = 'Interface (name interpreted for use here)')
     parser.add_option('-T','--Tool', action='store',help = 'Tool (can also provide -i flag too)')
-    parser.add_option('-i','--GaudiFunctionalInput',action='append',help='Input for Gaudi Functional Algorithm')
-    parser.add_option('-o','--GaudiFunctionalOutput',action='append',help='Output for Gaudi Functional Algorithm')
+    parser.add_option('-i','--GaudiFunctionalInput',action='store',help='Input for Gaudi Functional Algorithm')
+    parser.add_option('-o','--GaudiFunctionalOutput',action='store',help='Output for Gaudi Functional Algorithm')
     #parser.add_option('-H','--Header',action='store_true',help=' generate the header')
     #parser.add_option('-C','--cpp',action='store_true',help=' generate the .cpp implementation')
     #parser.add_option('-W','--write', action='store_true',help='Use the python script to write the output')
@@ -189,6 +189,7 @@ if __name__ == "__main__":
     # print args
     # print '*'*50
     options.isTTY = (os.isatty(0)) and (os.isatty(1)) and (os.isatty(2))
+    #print 'tty = ',options.isTTY
     if len(args)==0: 
         print 'need a class name!'
         sys.exit()
