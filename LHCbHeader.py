@@ -51,7 +51,11 @@ class LHCbHeader:
                 sub_str+=', virtual public %s'%self.configs.Interface
             retstr+=sub_str
         elif self.configs.type=='GFA':
-            sub_str = ' : public Gaudi::Functional::%s<%s(%s)> '%(self.configs.GaudiFunctional,self.configs.GaudiFunctionalOutput, self.configs.GaudiFunctionalInput)
+            sub_str = ' : public Gaudi::Functional::%s'%(self.configs.GaudiFunctional)
+            if not self.configs.GaudiFunctional=='Producer':
+                sub_str+='<%s(const %s)>'%(self.configs.GaudiFunctionalOutput, self.configs.GaudiFunctionalInput)
+            else:
+                sub_str+='<%s()>'%(self.configs.GaudiFunctionalOutput)
             retstr+=sub_str
         else: retstr+=''
         retstr+='{\n'
@@ -88,7 +92,11 @@ class LHCbHeader:
             #retstr+='\n\tvirtual StatusCode initialize();    ///< Algorithm initialization\n'
             # add the new operator () method
             #make a string for the inputs
-            retstr+='\n\n\t%s operator() (%s) const override;'%(self.configs.GaudiFunctionalOutput,self.configs.GaudiFunctionalInput)
+            
+            retstr+='\n\n\t%s operator() '%(self.configs.GaudiFunctionalOutput)
+            if not self.configs.GaudiFunctional=='Producer':retstr+='(const %s)'%(self.configs.GaudiFunctionalInput)
+            else: retstr+='()'
+            retstr+=' const override;'
         elif self.configs.type=='I': 
             pass
         else:

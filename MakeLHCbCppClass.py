@@ -31,7 +31,7 @@ def make_files(options,name):
         #print 'parsing .cpp'
     ####Type parsing. 
     ##NOTE: This is really only supported for command line, e.g. tty
-    if options.type==None:
+    if options.type==None and options.isTTY==True:
         atype = raw_input("Create Algorithm, DaVinciAlgorithm, GaudiFunctionalAlgorithm, Tool, Interface or simple class  A/D/F/T/I/[no] : ").upper()#upper to break possible problems
         if atype=='':
             options.type='S'
@@ -61,67 +61,47 @@ def make_files(options,name):
     else: pass
     ###parse functional settings    
     
-    if options.type=='GFA' and options.GaudiFunctional==None:
+    if options.type=='GFA' and options.GaudiFunctional==None and options.isTTY==True:
         gtype = raw_input("Transformer, Producer, Consumer, MultiTransformer [T]/P/C/M : ")#add later , MultiTransformerFilter or FilterPredicate
         if gtype=="T" or gtype=='':
             options.GaudiFunctional= "Transformer"
+            options.GaudiFunctionalInput = 'INPUT'
+            options.GaudiFunctionalOutput = 'OUTPUT'
         elif gtype=="P":
             options.GaudiFunctional="Producer"
+            options.GaudiFunctionalOuput = 'OUTPUT'
         elif gtype=="C":
             options.GaudiFunctional="Consumer"
+            options.GaudiFunctionalInput = 'INPUT'
+            options.GaudiFunctionalOutput='void'
         elif gtype=="M":
             options.GaudiFunctional="MultiTransformer"
+            options.GaudiFunctionalInput = 'InputDataStruct'
+            options.GaudiFunctionalOutput= 'std::tuple<OUTPUT1,OUTPUT2>'
         else: 
             print 'input unknown option! cannot parse!'
             sys.exit()
-    #add parsing of input/output
-    #input
-    if options.type=='GFA' and options.GaudiFunctionalInput==None and not options.GaudiFunctional=='Producer':
-        
-#         #should be a single string
-#         #print 'parsing input'
-#         ip = raw_input("Do you want to declare the input type(s)? [y]/n : ")
-#         if 'y'==ip or ''==ip:
-#             inputtxt = raw_input("please give the input (concatenate with ;) : ")
-#             if '' == inputtxt:
-#                 print "you didn't give an input text! appending 'INPUT'"
-#                 options.GaudiFunctionalInput = 'INPUT'
-#             else:
-#                 thething = ''
-#                 for thing in inputtxt.split(';'):
-#                     thething+=thing.rstrip()
-#                     if not thing == inputtxt.split(';')[-1]:
-#                         thething +=', '
-#                 options.GaudiFunctionalInput = thething
-#         else:
-        options.GaudiFunctionalInput = 'INPUT'        
-    else:
-        options.GaudiFunctionalInput=''
-    #output
-    if options.type=='GFA' and options.GaudiFunctionalOutput==None and not options.GaudiFunctional=='Consumer':
-        # print 'parsing output'
-#         ip = raw_input("Do you want to declare the output type(s)? [y]/n : ")
-#         if 'y'==ip or ''==ip:
-#             inputtxt = raw_input("please give the output (concatenate with ;) : ")
-#             if ''==inputtxt:
-#                 print "you didn't give an input text! appending 'OUTPUT'"
-#                 options.GaudiFunctionalOutput = 'OUTPUT'
-#             else:
-#                 thething = ''
-#                 for thing in inputtxt.split(';'):
-#                     thething+=thing.rstrip()
-#                     if not thing == inputtxt.split(';')[-1]:
-#                         thething+=', '
-#                 options.GaudiFunctionalOutput = thething
-#         else:
-        options.GaudiFunctionalOutput = 'OUTPUT'
-    else:
-        options.GaudiFunctionalOutput = 'void'
-    #print'input', options.GaudiFunctionalInput
-    #print 'output',options.GaudiFunctionalOutput
-    
+    #parse if not tty
+    if options.type=='GFA' and options.isTTY==False:
+        if options.GaudiFunctional=="T" or options.GaudiFunctional=='':
+            options.GaudiFunctional= "Transformer"
+            options.GaudiFunctionalInput = 'INPUT'
+            options.GaudiFunctionalOutput = 'OUTPUT'
+        elif options.GaudiFunctional=="P":
+            options.GaudiFunctional="Producer"
+            options.GaudiFunctionalOutput = 'OUTPUT'
+        elif options.GaudiFunctional=="C":
+            options.GaudiFunctional="Consumer"
+            options.GaudiFunctionalInput = 'INPUT'
+            options.GaudiFunctionalOutput='void'
+        elif options.GaudiFunctional=="M":
+            options.GaudiFunctional="MultiTransformer"
+            options.GaudiFunctionalInput = 'InputDataStruct'
+            options.GaudiFunctionalOutput= 'std::tuple<OUTPUT1,OUTPUT2>'
+        else: 
+            print 'input unknown option! cannot parse!'
     ###parse normal/davinci settings
-    
+
     ##algorithm settings
     if options.type=='A':
         if options.AlgorithmType==None and options.isTTY == True:
