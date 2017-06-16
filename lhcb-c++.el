@@ -245,8 +245,7 @@ is displayed"
 	(if is-gaudi-functional (concat "-f " gfa-type " "))
 				 (file-name-nondirectory buffer-file-name))
 )
-;;(shell-command-to-string (concat "/afs/cern.ch/user/a/adavis/public/emacs_templates/test/MakeLHCbCppClass.py" " -t A -a N " (file-name-nondirectory buffer-file-name)))
-;;(call-process "/afs/cern.ch/user/a/adavis/public/emacs_templates/test/MakeLHCbCppClass.py" nil t nil (concat " -t A -a N" (file-name-nondirectory buffer-file-name) ))
+
 
 ) 
 
