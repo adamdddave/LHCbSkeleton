@@ -19,7 +19,7 @@ class LHCbHeader:
                 incl += '#include "%s.h"\n'%self.configs.Interface
         elif self.configs.type=='I':
             retstr+='\n// from STL\n#include <string>\n\n'
-            incl = incl%('GaudiAlg/IAlgTool')
+            incl = incl%('GaudiKernel/IAlgTool')
             incl+='static const InterfaceID IID_%s ( "%s", 1, 0 );\n'%(self.name,self.name)
         elif self.configs.type=='DVA':
             incl = incl%('Kernel/DaVinci%sAlgorithm'%(self.configs.DaVinciAlgorithmType if not self.configs.DaVinciAlgorithmType=='Normal' else ''))

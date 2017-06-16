@@ -51,7 +51,8 @@ class LHCbCpp:
                 else:
                     ret+='\tdeclareInterface<%s>(this);\n'%self.configs.Interface
                 ret+='\n}\n\n'
-            else: ret+='\n\n'
+            else: ret+="{\n\n\n}"
+            ret+='\n\n'
             #destructor
             ret+=comment('Destructor',sep='=')
             ret+='%s::~%s() {} \n\n'%(self.name,self.name)
@@ -60,7 +61,18 @@ class LHCbCpp:
                 #initialize
                 ret+=comment('Initialization',sep='=')
                 ret+='StatusCode %s::initialize() {\n'%self.name
-                ret+='\tStatusCode sc = GaudiHistoAlg::initialize(); // must be executed first\n'
+                text_type = ''
+                if self.configs.type=='A':
+                    if self.configs.AlgorithmType == 'Normal':
+                        text_type = 'GaudiAlgorithm'
+                    else:
+                        text_type= 'Gaudi%sAlg'%self.configs.AlgorithmType
+                if self.configs.type=='DVA':
+                    if self.configs.DaVinciAlgorithmType == 'Normal':
+                        text_type = 'DaVinciAlgorithm'
+                    else:
+                        text_type='DaVinci%sAlgorithm'%self.configs.DaVinciAlgorithmType
+                ret+='\tStatusCode sc = %s::initialize(); // must be executed first\n'%(text_type)
                 ret+='\tif ( sc.isFailure() ) return sc;  // error printed already by GaudiAlgorithm\n\n'
                 ret+='\tif ( msgLevel(MSG::DEBUG) ) debug() << "==> Initialize" << endmsg;\n\n'
                 ret+='\treturn StatusCode::SUCCESS; \n}\n\n'
