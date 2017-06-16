@@ -237,7 +237,7 @@ is displayed"
 )
 
 (shell-command-to-string 
-(concat "/afs/cern.ch/user/a/adavis/public/emacs_templates/test/MakeLHCbCppClass.py " 
+(concat (getenv "EMACSDIR") "/MakeLHCbCppClass.py " 
 	" -t " file-type " "
 	(if is-algorithm (concat "-a " atype " "))
 	(if is-DValg (concat "-d " atype " "))
