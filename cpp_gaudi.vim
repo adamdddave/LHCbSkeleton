@@ -69,15 +69,17 @@ endif
 let s:GaudiTypes=["Algorithm", "DaVinciAlg", "Functional",
 \               "Interface", "Tool"]
 " dictionary mapping Gaudi entity types to their subtypes
-let s:GaudiSubtypes={ 'Functional': ["Producer",
-\           "Consumer", "Transformer", "MultiTransformer",
-\           "SplittingTransformer", "MergingTransformer",
-\           "FilterPredicate", "MultiTransformerFilter"],
+let s:GaudiSubtypes={ 'Functional': [ "Producer",
+\           "Consumer", "Transformer", "MultiTransformer" ],
 \           'Algorithm': ['Normal', 'Histo', 'Tuple'],
 \           'DaVinciAlg': ['Normal', 'Histo', 'Tuple'],
 \           'Tool': ['Normal', 'Histo', 'Tuple'] }
-let s:GaudiCmdLineTypeMap={ 'DaVinciAlg': 'DaVinciAlgorithm',
-\           'Functional': 'GaudiFunctionalAlgorithm' }
+" FIXME: add these back to Functional subtypes when Adam's script starts
+"        to support these again
+"\           "SplittingTransformer", "MergingTransformer",
+"\           "FilterPredicate", "MultiTransformerFilter"],
+let s:GaudiCmdLineTypeMap={ 'Algorithm': 'A', 'DaVinciAlg': 'DVA',
+\           'Functional': 'GFA', 'Tool': 'T', 'Interface': 'I' }
 " dictionary for the option used for subtypes (depending on differnt types)
 let s:GaudiCmdLineSubtypeOptionMap={ 'DaVinciAlg': '--DaVinciAlgorithmType',
 \           'Functional': '--GaudiFunctional', 'Algorithm': '--AlgorithmType',
@@ -314,12 +316,17 @@ function! s:GaudiGuessFunctionalAlg(dict)
         let l:dict['subtype'] = "Consumer"
     elseif 1 == l:nOut && 0 < l:nIn
         if l:dict['outputs'] =~ '^\(bool\|Bool\|Bool_t\)$'
-            let l:dict['subtype'] = "FilterPredicate"
+            " FIXME: Adam's script seems to have scrapped support for
+            " FilterPredicate, so we disable the mapping that the script
+            " cannot seem to handle, and go with the logic that something with
+            " inputs and exactly one output is a Transformer, too...
+            "let l:dict['subtype'] = 'FilterPredicate'
+            let l:dict['subtype'] = 'Transformer'
         else
-            let l:dict['subtype'] = "Transformer"
+            let l:dict['subtype'] = 'Transformer'
         endif
     else
-        let l:dict['subtype'] = "Multitransformer"
+        let l:dict['subtype'] = 'MultiTransformer'
     endif
     return l:dict
 endfunction
@@ -365,12 +372,12 @@ function! s:GaudiBuildCmdLine(dict)
     endif
     " are we dealing with a header or the implementation?
     if a:dict['filetype'] == 'header'
-        let l:arglist=l:arglist+['--HeaderOnly']
+        let l:classname=a:dict['classname'] . '.h'
     else
-        let l:arglist=l:arglist+['--cppOnly']
+        let l:classname=a:dict['classname'] . '.cpp'
     endif
     " append class name
-    let l:arglist=l:arglist+[shellescape(a:dict['classname'])]
+    let l:arglist=l:arglist+[shellescape(l:classname)]
     " string together list of arguments into a single string
     return join(l:arglist)
 endfunction
