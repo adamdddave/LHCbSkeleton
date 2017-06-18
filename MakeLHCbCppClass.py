@@ -45,7 +45,8 @@ def make_files(options,name):
             options.type = 'T'
             if options.Interface==None and options.isTTY==True:
                 itype = raw_input("Interface name (blank = not using an interface) : ")
-                if itype=='': itype = None
+                if itype=='': 
+                    itype = None
                 options.Interface=itype
             else:
                 options.Interface=None
@@ -57,6 +58,8 @@ def make_files(options,name):
     elif options.type=='T' and options.Interface==None and options.isTTY==True:
 #TODO add interface="" exception
         itype = raw_input("Interface name (blank = not using an interface) : ")
+        if itype =='':
+            itype=None
         options.Interface=itype
     else: pass
     ###parse functional settings    
