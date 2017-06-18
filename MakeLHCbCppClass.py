@@ -100,6 +100,19 @@ def make_files(options,name):
             options.GaudiFunctionalOutput= 'std::tuple<OUTPUT1,OUTPUT2>'
         else: 
             print 'input unknown option! cannot parse!'
+    if options.type=='GFA' and options.isTTY==True and not options.GaudiFunctional == None:
+        
+        if options.GaudiFunctional == 'Transformer':
+            options.GaudiFunctionalInput = 'INPUT'
+            options.GaudiFunctionalOutput = 'OUTPUT'
+        elif options.GaudiFunctional=='Producer':
+            options.GaudiFunctionalOutput = 'OUTPUT'
+        elif options.GaudiFunctional=='Consumer':
+            options.GaudiFunctionalInput = 'INPUT'
+            options.GaudiFunctionalOutput='void'
+        elif options.GaudiFunctional=='MultiTransformer':
+            options.GaudiFunctionalInput='InputDataStruct'
+            options.GaudiFunctionalOutput= 'std::tuple<OUTPUT1,OUTPUT2>'
     ###parse normal/davinci settings
 
     ##algorithm settings
