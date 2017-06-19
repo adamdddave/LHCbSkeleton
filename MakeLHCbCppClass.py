@@ -2,7 +2,7 @@
 # What:  python tool to replace emacs template for LHCb Algorithms
 # Author: Adam Davis
 # Date: 29/03/2017
-# Updated: 11/06/2017
+# Updated: 19/06/2017. remove useless comments
 
 import sys,os,pwd,time
 from optparse import OptionParser
@@ -160,10 +160,10 @@ def make_files(options,name):
         ret = thing.genHeader()
         ret+= doxyComment(first=True, text = name)
         ret+= thing.makebody()
-        # if options.write==True:
-#             f_dot_h = open(name+'.h','w')
-#             f_dot_h.write(ret)
-#             f_dot_h.close()
+        if options.write==True:
+            f_dot_h = open(name+'.h','w')
+            f_dot_h.write(ret)
+            f_dot_h.close()
         print ret
     else: pass#print name+'.h exists!'
     # print '-'*50
@@ -171,21 +171,17 @@ def make_files(options,name):
     # print '-'*50
     thing2 = LHCbCpp(name,options)
     if options.cpp==True and not exists(name+'.cpp'):
-        # if options.write==True:
-#             f_dot_cpp = open(name+'.cpp','w')
-#             f_dot_cpp.write(thing2.genText())
-#             f_dot_cpp.close()
+        if options.write==True:
+            f_dot_cpp = open(name+'.cpp','w')
+            f_dot_cpp.write(thing2.genText())
+            f_dot_cpp.close()
         print thing2.genText()
-    else: pass#print name+'.cpp exists!'
+    else: pass
 
 #parse options    
 #classes for header and .cpp file.
 
 if __name__ == "__main__":
-    # if (os.isatty(0)) : print "stdin is a tty"
-    # if (os.isatty(1)) : print "stdout is a tty"
-    # if (os.isatty(2)) : print "stderr is a tty"
-
     usage = "usage: %prog [options] name"
     parser = OptionParser( usage = usage )
     parser.add_option('-t','--type',action='store',dest='type',help="Create Algorithm type %s"%headerConfigs['algorithm'])
@@ -196,16 +192,11 @@ if __name__ == "__main__":
     parser.add_option('-T','--Tool', action='store',help = 'Tool (can also provide -i flag too)')
     parser.add_option('-i','--GaudiFunctionalInput',action='store',help='Input for Gaudi Functional Algorithm')
     parser.add_option('-o','--GaudiFunctionalOutput',action='store',help='Output for Gaudi Functional Algorithm')
-    #parser.add_option('-H','--Header',action='store_true',help=' generate the header')
-    #parser.add_option('-C','--cpp',action='store_true',help=' generate the .cpp implementation')
-    #parser.add_option('-W','--write', action='store_true',help='Use the python script to write the output')
+    parser.add_option('-W','--write', action='store_true',help='Use the python script to write the output')
     (options, args) = parser.parse_args()
-    # print '*'*50
-    # print options
-    # print args
-    # print '*'*50
+
     options.isTTY = (os.isatty(0)) and (os.isatty(1)) and (os.isatty(2))
-    #print 'tty = ',options.isTTY
+
     if len(args)==0: 
         print 'need a class name!'
         sys.exit()
