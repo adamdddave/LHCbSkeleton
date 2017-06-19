@@ -12,11 +12,7 @@ class LHCbCpp:
 
     def genText(self):
         ret = '//Include files\n\n'
-        if self.configs.type=='A' or self.configs.type=='DVA':
-            ret+='#include "GaudiKernel/AlgFactory.h"\n\n'
-        elif self.configs.type=='T':
-            ret+='#include "GaudiKernel/ToolFactory.h"\n\n'
-        ret+='//local\n\n'
+        ret+= '//local\n\n'
         ret+= '#include "%s.h"\n'%self.name
         ret+= comment('Implementation file for class : %s\n//\n// %s : %s'%(self.name,
                                                                             time.strftime("%d/%m/%Y"),
@@ -24,11 +20,8 @@ class LHCbCpp:
         
         if self.configs.type=='GFA':
             ret+='using namespace Gaudi::Functional;\n\n'
-        if self.configs.type=='A' or self.configs.type=='DVA' or self.configs.type=='GFA':
-            ret+='// Declaration of the Algorithm Factory\nDECLARE_ALGORITHM_FACTORY( %s )\n\n\n'%self.name
+        ret+='// Declaration of the factory\nDECLARE_COMPONENT( %s )\n\n\n'%self.name
 
-        elif self.configs.type=='T':
-            ret+='// Declaration of the Tool Factory\nDECLARE_TOOL_FACTORY( %s )\n\n\n'%self.name
         #constructor
         if not self.configs.type=='GFA':
             ret+=comment('Standard constructor, initializes variables',sep='=')
