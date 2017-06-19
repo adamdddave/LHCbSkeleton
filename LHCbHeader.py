@@ -100,10 +100,10 @@ class LHCbHeader:
         elif self.configs.type=='I': 
             pass
         else:
-            retstr+='\n\tvirtual ~%s( ); ///< Destructor \n'%(self.name)
+            retstr+='\n  ~%s(); ///< Destructor \n'%(self.name)
         if self.configs.type=='A' or self.configs.type=='DVA':
-            retstr+='\n\tvirtual StatusCode initialize();    ///< Algorithm initialization\n'
-            retstr+='\tvirtual StatusCode execute   ();    ///< Algorithm execution\n'
-            retstr+='\tvirtual StatusCode finalize  ();    ///< Algorithm finalization\n'
+            retstr+='\n  StatusCode initialize() override;    ///< Algorithm initialization\n'
+            retstr+='  StatusCode execute() override;    ///< Algorithm execution\n'
+            retstr+='  StatusCode finalize() override;    ///< Algorithm finalization\n'
         retstr+='\n\nprotected:\n\nprivate:\n\n};\n'
         return retstr
