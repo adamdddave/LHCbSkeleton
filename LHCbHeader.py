@@ -30,8 +30,6 @@ class LHCbHeader:
                 incl = incl%('GaudiAlg/Gaudi%sAlg'%(self.configs.AlgorithmType))
         else: incl = '\n'
         retstr+=incl
-        if self.configs.type=='GFA':
-            retstr+='using namespace Gaudi::Functional;\n\n'
         return retstr
     
     def makebody(self):
