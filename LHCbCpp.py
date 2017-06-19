@@ -98,7 +98,7 @@ class LHCbCpp:
             inputstr = ''
             counter = 1;
             if not self.configs.GaudiFunctional=='Producer':
-                ret+='%s %s::operator() (const %s) const {\n\n'%(self.configs.GaudiFunctionalOutput, self.name, self.configs.GaudiFunctionalInput)
+                ret+='%s %s::operator() (const %s &) const {\n\n'%(self.configs.GaudiFunctionalOutput, self.name, self.configs.GaudiFunctionalInput)
             else:
                 ret+='%s %s::operator() () const {\n\n'%(self.configs.GaudiFunctionalOutput, self.name)
             retstr = ''

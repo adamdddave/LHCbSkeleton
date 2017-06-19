@@ -51,7 +51,7 @@ class LHCbHeader:
         elif self.configs.type=='GFA':
             sub_str = ' : public Gaudi::Functional::%s'%(self.configs.GaudiFunctional)
             if not self.configs.GaudiFunctional=='Producer':
-                sub_str+='<%s(const %s)>'%(self.configs.GaudiFunctionalOutput, self.configs.GaudiFunctionalInput)
+                sub_str+='<%s(const %s &)>'%(self.configs.GaudiFunctionalOutput, self.configs.GaudiFunctionalInput)
             else:
                 sub_str+='<%s()>'%(self.configs.GaudiFunctionalOutput)
             retstr+=sub_str
