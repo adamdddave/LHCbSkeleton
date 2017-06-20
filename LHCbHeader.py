@@ -1,107 +1,129 @@
 #!/usr/bin/python
 import sys,os
-
+from string import Template
+from support import * #doxyComment,comment,exists
 class LHCbHeader:
     def __init__(self, name, configs = None, requirements = None):
         self.name = name
         self.configs = configs
+        self.configs.name = name
         self.requirements = requirements
-
-    
-    def genHeader(self):        
-        retstr = "#pragma once\n\n// Include Files\n\n"
-        incl = '#include "%s.h"\n'
-        if self.configs.type == 'GFA': 
-            incl = incl%('GaudiAlg/'+self.configs.GaudiFunctional)
-        elif self.configs.type=='T' :
-            incl = incl%('GaudiAlg/GaudiTool')
-            if not self.configs.Interface==None: 
-                incl += '#include "%s.h"\n'%self.configs.Interface
-        elif self.configs.type=='I':
-            retstr+='\n// from STL\n#include <string>\n\n'
-            incl = incl%('GaudiKernel/IAlgTool')
-            incl+='static const InterfaceID IID_%s ( "%s", 1, 0 );\n'%(self.name,self.name)
-        elif self.configs.type=='DVA':
-            incl = incl%('Kernel/DaVinci%sAlgorithm'%(self.configs.DaVinciAlgorithmType if not self.configs.DaVinciAlgorithmType=='Normal' else ''))
-        elif self.configs.type=='A':
-            if self.configs.AlgorithmType=='Normal':
-                incl = incl%('GaudiAlg/GaudiAlgorithm')
-            else:
-                incl = incl%('GaudiAlg/Gaudi%sAlg'%(self.configs.AlgorithmType))
-        else: incl = '\n'
-        retstr+=incl
-        return retstr
-    
-    def makebody(self):
-        retstr = 'class %s '%self.name
-        if self.configs.type=='DVA':
-            sub_str = ' : public DaVinci%sAlgorithm '%(self.configs.DaVinciAlgorithmType if not self.configs.DaVinciAlgorithmType=='Normal' else '')
-            retstr+=sub_str
-        elif self.configs.type=='A': 
-            sub_str = ' : public Gaudi%s '%('%sAlg'%(self.configs.AlgorithmType) if not self.configs.AlgorithmType == 'Normal' else 'Algorithm ')
-            retstr+=sub_str
-        elif self.configs.type=='I':
-            sub_str = ' : virtual public IAlgTool '
-            retstr+=sub_str
-        elif self.configs.type=='T':
-            sub_str = ' : public GaudiTool'
-            if not self.configs.Interface ==None:
-                sub_str+=', virtual public %s'%self.configs.Interface
-            retstr+=sub_str
-        elif self.configs.type=='GFA':
-            sub_str = ' : public Gaudi::Functional::%s'%(self.configs.GaudiFunctional)
-            if not self.configs.GaudiFunctional=='Producer':
-                sub_str+='<%s(const %s &)>'%(self.configs.GaudiFunctionalOutput, self.configs.GaudiFunctionalInput)
-            else:
-                sub_str+='<%s()>'%(self.configs.GaudiFunctionalOutput)
-            retstr+=sub_str
-        else: retstr+=''
-        retstr+='{\n'
-        #constructors
-        retstr+='public:\n'
-        if self.configs.type=='GFA':
-            funcIO = ''
-            if self.configs.GaudiFunctional=='Producer':
-                #no input, only output
-                funcIO = 'KeyValue("OutputLocation",{"OUTPUTLOCATION"})'
-            elif self.configs.GaudiFunctional=='Transformer':
-                funcIO = 'KeyValue("InputLocation",{"INPUTLOCATION"})\n\t\t,KeyValue("OutputLocation",{"OUTPUTLOCATION"})'
-            elif self.configs.GaudiFunctional=='Consumer':
-                funcIO = 'KeyValue("OutputLocation",{"OUTPUTLOCATION"})'
-            elif self.configs.GaudiFunctional=='MultiTransformer':
-                funcIO = '{KeyValue("Input1",{"INPUT1LOC"}),\n\t\t KeyValue("Input2",{"INPUT2LOC"})},\n\t\t{KeyValue("Output1",{"OUTPUTLOC1"}),\n\t\t KeyValue("Output2",{"OUTPUTLOC2"})}'
-            retstr+='\t/// Standard constructor\n\t%s( const std::string& name, ISvcLocator* pSvcLocator ) \n\t\t: %s(name, pSvcLocator, \n\t\t%s)\n\t{}\n\n'%(self.name, self.configs.GaudiFunctional,funcIO)
+        self.configs.comment = doxyComment(first=True, text = name)
+        the_string = ''
+        curr_path = os.path.dirname(os.path.abspath(__file__))
+        if self.configs.type =='GFA':
+            the_string = open(curr_path+'/raw_skeletons/raw_GaudiFunctional.h','r').read()
+        elif self.configs.type == 'T':
+            the_string = open(curr_path+'/raw_skeletons/raw_Tool.h','r').read()
+        elif self.configs.type == 'I':
+            the_string = open(curr_path+'/raw_skeletons/raw_Interface.h','r').read()
+        elif self.configs.type == 'DVA':
+            the_string = open(curr_path+'/raw_skeletons/raw_DaVinciAlgorithm.h','r').read()
             
-
-        elif self.configs.type=='I':
-            retstr+='\t// Return the interface ID\n\tstatic const InterfaceID& interfaceID() { return IID_%s; }\n'%self.name
-
-        elif self.configs.type=='T':
-            if not self.configs.Interface==None:
-                retstr+='\t// Return the interface ID \n\tstatic const InterfaceID& interfaceID() { return IID_%s; }\n\n'%self.name
-            retstr+='\t/// Standard constructor\n\t%s( const std::string& type,\n\t%sconst std::string& name,\n\t%sconst IInterface* parent);'%(self.name,' '*(len(self.name)+2),' '*(len(self.name)+2))            
-        elif self.configs.type=='S':
-            retstr+='\t/// Standard Constructor\n\t%s( );\n'%(self.name)
-        else:
-            retstr+='\t/// Standard constructor\n\t%s( const std::string& name, ISvcLocator* pSvcLocator );\n'%(self.name)
+        temp = Template(the_string)
+        self.genText =  temp.safe_substitute(vars(self.configs))
         
-        #destructor and class members
-        if self.configs.type=='GFA':
-            #retstr+='\n\tvirtual StatusCode initialize();    ///< Algorithm initialization\n'
-            # add the new operator () method
-            #make a string for the inputs
+
+
+
+
+
+
+    
+#     def genHeader(self):        
+#         retstr = "#pragma once\n\n// Include Files\n\n"
+#         incl = '#include "%s.h"\n'
+#         if self.configs.type == 'GFA': 
+#             incl = incl%('GaudiAlg/'+self.configs.GaudiFunctional)
+#         elif self.configs.type=='T' :
+#             incl = incl%('GaudiAlg/GaudiTool')
+#             if not self.configs.Interface==None: 
+#                 incl += '#include "%s.h"\n'%self.configs.Interface
+#         elif self.configs.type=='I':
+#             retstr+='\n// from STL\n#include <string>\n\n'
+#             incl = incl%('GaudiKernel/IAlgTool')
+#             incl+='static const InterfaceID IID_%s ( "%s", 1, 0 );\n'%(self.name,self.name)
+#         elif self.configs.type=='DVA':
+#             incl = incl%('Kernel/DaVinci%sAlgorithm'%(self.configs.DaVinciAlgorithmType if not self.configs.DaVinciAlgorithmType=='Normal' else ''))
+#         elif self.configs.type=='A':
+#             if self.configs.AlgorithmType=='Normal':
+#                 incl = incl%('GaudiAlg/GaudiAlgorithm')
+#             else:
+#                 incl = incl%('GaudiAlg/Gaudi%sAlg'%(self.configs.AlgorithmType))
+#         else: incl = '\n'
+#         retstr+=incl
+#         return retstr
+    
+#     def makebody(self):
+#         retstr = 'class %s '%self.name
+#         if self.configs.type=='DVA':
+#             sub_str = ' : public DaVinci%sAlgorithm '%(self.configs.DaVinciAlgorithmType if not self.configs.DaVinciAlgorithmType=='Normal' else '')
+#             retstr+=sub_str
+#         elif self.configs.type=='A': 
+#             sub_str = ' : public Gaudi%s '%('%sAlg'%(self.configs.AlgorithmType) if not self.configs.AlgorithmType == 'Normal' else 'Algorithm ')
+#             retstr+=sub_str
+#         elif self.configs.type=='I':
+#             sub_str = ' : virtual public IAlgTool '
+#             retstr+=sub_str
+#         elif self.configs.type=='T':
+#             sub_str = ' : public GaudiTool'
+#             if not self.configs.Interface ==None:
+#                 sub_str+=', virtual public %s'%self.configs.Interface
+#             retstr+=sub_str
+#         elif self.configs.type=='GFA':
+#             sub_str = ' : public Gaudi::Functional::%s'%(self.configs.GaudiFunctional)
+#             if not self.configs.GaudiFunctional=='Producer':
+#                 sub_str+='<%s(const %s &)>'%(self.configs.GaudiFunctionalOutput, self.configs.GaudiFunctionalInput)
+#             else:
+#                 sub_str+='<%s()>'%(self.configs.GaudiFunctionalOutput)
+#             retstr+=sub_str
+#         else: retstr+=''
+#         retstr+='{\n'
+#         #constructors
+#         retstr+='public:\n'
+#         if self.configs.type=='GFA':
+#             funcIO = ''
+#             if self.configs.GaudiFunctional=='Producer':
+#                 #no input, only output
+#                 funcIO = 'KeyValue("OutputLocation",{"OUTPUTLOCATION"})'
+#             elif self.configs.GaudiFunctional=='Transformer':
+#                 funcIO = 'KeyValue("InputLocation",{"INPUTLOCATION"})\n\t\t,KeyValue("OutputLocation",{"OUTPUTLOCATION"})'
+#             elif self.configs.GaudiFunctional=='Consumer':
+#                 funcIO = 'KeyValue("OutputLocation",{"OUTPUTLOCATION"})'
+#             elif self.configs.GaudiFunctional=='MultiTransformer':
+#                 funcIO = '{KeyValue("Input1",{"INPUT1LOC"}),\n\t\t KeyValue("Input2",{"INPUT2LOC"})},\n\t\t{KeyValue("Output1",{"OUTPUTLOC1"}),\n\t\t KeyValue("Output2",{"OUTPUTLOC2"})}'
+#             retstr+='\t/// Standard constructor\n\t%s( const std::string& name, ISvcLocator* pSvcLocator ) \n\t\t: %s(name, pSvcLocator, \n\t\t%s)\n\t{}\n\n'%(self.name, self.configs.GaudiFunctional,funcIO)
             
-            retstr+='\n\n\t%s operator() '%(self.configs.GaudiFunctionalOutput)
-            if not self.configs.GaudiFunctional=='Producer':retstr+='(const %s)'%(self.configs.GaudiFunctionalInput)
-            else: retstr+='()'
-            retstr+=' const override;'
-        elif self.configs.type=='I': 
-            pass
-        else:
-            retstr+='\n  ~%s(); ///< Destructor \n'%(self.name)
-        if self.configs.type=='A' or self.configs.type=='DVA':
-            retstr+='\n  StatusCode initialize() override;    ///< Algorithm initialization\n'
-            retstr+='  StatusCode execute() override;    ///< Algorithm execution\n'
-            retstr+='  StatusCode finalize() override;    ///< Algorithm finalization\n'
-        retstr+='\n\nprotected:\n\nprivate:\n\n};\n'
-        return retstr
+
+#         elif self.configs.type=='I':
+#             retstr+='\t// Return the interface ID\n\tstatic const InterfaceID& interfaceID() { return IID_%s; }\n'%self.name
+
+#         elif self.configs.type=='T':
+#             if not self.configs.Interface==None:
+#                 retstr+='\t// Return the interface ID \n\tstatic const InterfaceID& interfaceID() { return IID_%s; }\n\n'%self.name
+#             retstr+='\t/// Standard constructor\n\t%s( const std::string& type,\n\t%sconst std::string& name,\n\t%sconst IInterface* parent);'%(self.name,' '*(len(self.name)+2),' '*(len(self.name)+2))            
+#         elif self.configs.type=='S':
+#             retstr+='\t/// Standard Constructor\n\t%s( );\n'%(self.name)
+#         else:
+#             retstr+='\t/// Standard constructor\n\t%s( const std::string& name, ISvcLocator* pSvcLocator );\n'%(self.name)
+        
+#         #destructor and class members
+#         if self.configs.type=='GFA':
+#             #retstr+='\n\tvirtual StatusCode initialize();    ///< Algorithm initialization\n'
+#             # add the new operator () method
+#             #make a string for the inputs
+            
+#             retstr+='\n\n\t%s operator() '%(self.configs.GaudiFunctionalOutput)
+#             if not self.configs.GaudiFunctional=='Producer':retstr+='(const %s)'%(self.configs.GaudiFunctionalInput)
+#             else: retstr+='()'
+#             retstr+=' const override;'
+#         elif self.configs.type=='I': 
+#             pass
+#         else:
+#             retstr+='\n  ~%s(); ///< Destructor \n'%(self.name)
+#         if self.configs.type=='A' or self.configs.type=='DVA':
+#             retstr+='\n  StatusCode initialize() override;    ///< Algorithm initialization\n'
+#             retstr+='  StatusCode execute() override;    ///< Algorithm execution\n'
+#             retstr+='  StatusCode finalize() override;    ///< Algorithm finalization\n'
+#         retstr+='\n\nprotected:\n\nprivate:\n\n};\n'
+#         return retstr

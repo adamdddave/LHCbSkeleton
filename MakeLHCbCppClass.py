@@ -9,11 +9,14 @@ from optparse import OptionParser
 from LHCbHeader import LHCbHeader
 from LHCbCpp import LHCbCpp
 from support import * #doxyComment,comment,exists
+
+
 #possibilities
 headerConfigs= { 'algorithm': ['A (Algorithm)','GFA (GaudiFunctionalAlgorithm)','DVA (DaVinciAlgorithm)','T (Tool)','I (Interface)','simple'],
                  'DVtype' : ['Normal','Histo','Tuple'],
                  'GFtype' : ['Producer','Consumer','Transformer','MultiTransformer'],#,'SplittingTransformer','MergingTransformer','FilterPredicate','MultiTransformerFilter'
                  'NAtype' : ['Normal','Histo','Tuple'],
+                 'GFInheritance': []
                  }
 
 def make_files(options,name):
@@ -66,6 +69,10 @@ def make_files(options,name):
     
     if options.type=='GFA' and options.GaudiFunctional==None and options.isTTY==True:
         gtype = raw_input("Transformer, Producer, Consumer, MultiTransformer [T]/P/C/M : ")#add later , MultiTransformerFilter or FilterPredicate
+        #add possible inheritance from non-standard  base class
+        nonStandardBase = raw_input('Does this inherit from a non-standard base class? y/[n]').upper()
+        if nonStandardBase=='Y':
+            options.nonStandardBase=True
         if gtype=="T" or gtype=='':
             options.GaudiFunctional= "Transformer"
             options.GaudiFunctionalInput = 'INPUT'
@@ -151,11 +158,15 @@ def make_files(options,name):
     # print 'options = ', options
     #print 'btype = ', btype
     # print 
-#    print 'now using options',options
+    #     print 'now using options',options
+    #     print type(options)
     thing = LHCbHeader(name,options)
-    # print '-'*50
-    # print 'Generating header'
-    # print '-'*50
+    print '-'*50
+    print 'Generating header'
+    print '-'*50
+    print thing.genText
+    print '-'*50
+    sys.exit()
     if options.Header==True and not exists(name+'.h'):
         ret = thing.genHeader()
         ret+= doxyComment(first=True, text = name)
@@ -193,6 +204,7 @@ if __name__ == "__main__":
     parser.add_option('-i','--GaudiFunctionalInput',action='store',help='Input for Gaudi Functional Algorithm')
     parser.add_option('-o','--GaudiFunctionalOutput',action='store',help='Output for Gaudi Functional Algorithm')
     parser.add_option('-W','--write', action='store_true',help='Use the python script to write the output')
+    parser.add_option('-n','--nonStandardBase', action='store_true',help='Use a non-standard base with GaudiFunctional')
     (options, args) = parser.parse_args()
 
     options.isTTY = (os.isatty(0)) and (os.isatty(1)) and (os.isatty(2))
