@@ -24,7 +24,7 @@ DECLARE_ALGORITHM_FACTORY( ${name} )
 
 ${name}::${name} ( const std::string& name, 
 		   ISvcLocator* pSvcLocator)
-:DaVinci${DaVinciAlgorithmType}Algorithm ( name,  pSvcLocator )
+:DaVinci${DaVinciAlgorithmTypeName}Algorithm ( name,  pSvcLocator )
 {
 
 }
@@ -38,7 +38,7 @@ ${name}::${name} ( const std::string& name,
 // Initialization
 //=============================================================================
 StatusCode ${name}::initialize() {
-  StatusCode sc = DaVinci%{DaVinciAlgorithmType}Algorithm::initialize(); // must be executed first
+  StatusCode sc = DaVinci${DaVinciAlgorithmTypeName}Algorithm::initialize(); // must be executed first
   if ( sc.isFailure() ) return sc;  // error printed already by GaudiAlgorithm
 
   if ( msgLevel(MSG::DEBUG) ) debug() << "==> Initialize" << endmsg;
@@ -63,7 +63,7 @@ StatusCode ${name}::finalize() {
 
   if ( msgLevel(MSG::DEBUG) ) debug() << "==> Finalize" << endmsg;
 
-  return DaVinci${DaVinciAlgorithmType}Algorithm::finalize();  // must be called after all other actions
+  return DaVinci${DaVinciAlgorithmTypeName}Algorithm::finalize();  // must be called after all other actions
 }
 
 //=============================================================================

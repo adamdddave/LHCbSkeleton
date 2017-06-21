@@ -1,11 +1,11 @@
 #pragma once
 
 // Include Files
-#include "Kernel/DaVinci${DaVinciAlgorithmType}Algorithm"
+#include "Kernel/DaVinci${DaVinciAlgorithmTypeName}Algorithm"
 
 ${comment}
 
-class ${name} : public DaVinci${DaVinciAlgorithmType}Algorithm {
+class ${name} : public DaVinci${DaVinciAlgorithmTypeName}Algorithm {
  public:
   /// Standard constructor 
   ${name} ( const std::string& name, ISvcLocator* pSvcLocator );

@@ -10,7 +10,7 @@ class ${name}: public Gaudi::Functional::${GaudiFunctional}<${GaudiFunctionalOut
   /// Standard constructor
   ${name}( const std::string& name, ISvcLocator* pSvcLocator )
 	   : ${GaudiFunctional}( name, pSvcLocator,
-				 ${funcIO} )
+${funcIO} )
 				 {}
   ${GaudiFunctionalOutput} operator()(${GaudiFunctionalInput}) const override;
  protected:

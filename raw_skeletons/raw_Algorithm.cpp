@@ -10,7 +10,7 @@
 //-----------------------------------------------------------------------------
 // Implementation file for class : ${name}
 //
-// {$date} : ${author}
+// ${date} : ${author}
 //-----------------------------------------------------------------------------
 
 // Declaration of the factory
@@ -21,7 +21,7 @@ DECLARE_ALGORITHM_FACTORY( ${name} )
 //===========================================================================
 ${name}::${name}( const std::string& name,
                         ISvcLocator* pSvcLocator )
-: Gaudi${AlgorithmType} ( name , pSvcLocator )
+: Gaudi${AlgorithmTypeName} ( name , pSvcLocator )
 {
 
 
@@ -37,7 +37,7 @@ ${name}::${name}( const std::string& name,
 // Initialization
 //===========================================================================
 StatusCode ${name}::initialize() {
-  StatusCode sc = Gaudi${AlgorithmType}::initialize(); // must be executed first
+  StatusCode sc = Gaudi${AlgorithmTypeName}::initialize(); // must be executed first
   if ( sc.isFailure() ) return sc;  // error printed already by GaudiAlgorithm
   
   if ( msgLevel(MSG::DEBUG) ) debug() << "==> Initialize" << endmsg;
@@ -60,7 +60,7 @@ StatusCode ${name}::finalize() {
 
 	if ( msgLevel(MSG::DEBUG) ) debug() << "==> Finalize" << endmsg;
 
-	return Gaudi${AlgorithmType}::finalize();
+	return Gaudi${AlgorithmTypeName}::finalize();
 }
 
 //===========================================================================

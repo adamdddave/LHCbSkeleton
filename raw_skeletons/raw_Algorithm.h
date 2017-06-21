@@ -2,12 +2,12 @@
 
 // Include Files
 
-#include "GaudiAlg/Gaudi${AlgorithmType}.h"
+#include "GaudiAlg/Gaudi${AlgorithmTypeName}.h"
 
 ${comment}
 
 
-class ${name} : public Gaudi${AlgorithmType} {
+class ${name} : public Gaudi${AlgorithmTypeName} {
  public: 
   /// Standard constructor
   ${name} ( const std::string& name, ISvcLocator* pSvcLocator ) ;

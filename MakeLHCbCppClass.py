@@ -72,21 +72,22 @@ def make_files(options,name):
         #add possible inheritance from non-standard  base class
         nonStandardBase = raw_input('Does this inherit from a non-standard base class? y/[n]').upper()
         if nonStandardBase=='Y':
-            options.nonStandardBase=True
+            options.GFInheritance = ', Gaudi::Functional::Traits::BaseClass_t<NONSTANDARDBASE>'
+        else: options.GFInheritance= ''
         if gtype=="T" or gtype=='':
             options.GaudiFunctional= "Transformer"
-            options.GaudiFunctionalInput = 'INPUT'
+            options.GaudiFunctionalInput = 'const INPUT'
             options.GaudiFunctionalOutput = 'OUTPUT'
         elif gtype=="P":
             options.GaudiFunctional="Producer"
             options.GaudiFunctionalOuput = 'OUTPUT'
         elif gtype=="C":
             options.GaudiFunctional="Consumer"
-            options.GaudiFunctionalInput = 'INPUT'
+            options.GaudiFunctionalInput = 'const INPUT'
             options.GaudiFunctionalOutput='void'
         elif gtype=="M":
             options.GaudiFunctional="MultiTransformer"
-            options.GaudiFunctionalInput = 'InputDataStruct'
+            options.GaudiFunctionalInput = 'const InputDataStruct'
             options.GaudiFunctionalOutput= 'std::tuple<OUTPUT1,OUTPUT2>'
         else: 
             print 'input unknown option! cannot parse!'
@@ -95,33 +96,34 @@ def make_files(options,name):
     if options.type=='GFA' and options.isTTY==False:
         if options.GaudiFunctional=="T" or options.GaudiFunctional=='':
             options.GaudiFunctional= "Transformer"
-            options.GaudiFunctionalInput = 'INPUT'
+            options.GaudiFunctionalInput = 'const INPUT'
             options.GaudiFunctionalOutput = 'OUTPUT'
         elif options.GaudiFunctional=="P":
             options.GaudiFunctional="Producer"
             options.GaudiFunctionalOutput = 'OUTPUT'
         elif options.GaudiFunctional=="C":
             options.GaudiFunctional="Consumer"
-            options.GaudiFunctionalInput = 'INPUT'
+            options.GaudiFunctionalInput = 'const INPUT'
             options.GaudiFunctionalOutput='void'
         elif options.GaudiFunctional=="M":
             options.GaudiFunctional="MultiTransformer"
-            options.GaudiFunctionalInput = 'InputDataStruct'
+            options.GaudiFunctionalInput = 'const InputDataStruct'
             options.GaudiFunctionalOutput= 'std::tuple<OUTPUT1,OUTPUT2>'
         else: 
             print 'input unknown option! cannot parse!'
+
     if options.type=='GFA' and options.isTTY==True and not options.GaudiFunctional == None:
         
         if options.GaudiFunctional == 'Transformer':
-            options.GaudiFunctionalInput = 'INPUT'
+            options.GaudiFunctionalInput = 'const INPUT'
             options.GaudiFunctionalOutput = 'OUTPUT'
         elif options.GaudiFunctional=='Producer':
             options.GaudiFunctionalOutput = 'OUTPUT'
         elif options.GaudiFunctional=='Consumer':
-            options.GaudiFunctionalInput = 'INPUT'
+            options.GaudiFunctionalInput = 'const INPUT'
             options.GaudiFunctionalOutput='void'
         elif options.GaudiFunctional=='MultiTransformer':
-            options.GaudiFunctionalInput='InputDataStruct'
+            options.GaudiFunctionalInput='const InputDataStruct'
             options.GaudiFunctionalOutput= 'std::tuple<OUTPUT1,OUTPUT2>'
     ###parse normal/davinci settings
 
@@ -161,32 +163,24 @@ def make_files(options,name):
     #     print 'now using options',options
     #     print type(options)
     thing = LHCbHeader(name,options)
-    print '-'*50
-    print 'Generating header'
-    print '-'*50
-    print thing.genText
-    print '-'*50
-    sys.exit()
     if options.Header==True and not exists(name+'.h'):
-        ret = thing.genHeader()
-        ret+= doxyComment(first=True, text = name)
-        ret+= thing.makebody()
+        ret = thing.genText
         if options.write==True:
             f_dot_h = open(name+'.h','w')
             f_dot_h.write(ret)
-            f_dot_h.close()
         print ret
     else: pass#print name+'.h exists!'
     # print '-'*50
     # print 'Generating cpp'
     # print '-'*50
+    
     thing2 = LHCbCpp(name,options)
     if options.cpp==True and not exists(name+'.cpp'):
         if options.write==True:
             f_dot_cpp = open(name+'.cpp','w')
-            f_dot_cpp.write(thing2.genText())
+            f_dot_cpp.write(thing2.genText)
             f_dot_cpp.close()
-        print thing2.genText()
+        print thing2.genText
     else: pass
 
 #parse options    

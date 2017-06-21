@@ -5,7 +5,7 @@ def doxyComment(text='',first = False):
     retstr = "/*"
     if first==True:
         cwd = os.getcwd().split('/')[-1]
-        retstr+='* @class %s %s.h %s\n'%(text, text, cwd+'/'+text)
+        retstr+='* @class %s %s.h %s.h\n'%(text, text, cwd+'/'+text)
     else: retstr+= "* %s\n"%text
     retstr+= "*\n"*2
     if first==True:
