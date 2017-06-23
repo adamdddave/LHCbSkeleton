@@ -10,7 +10,7 @@ public:
 	/// Standard Constructor
 	${name}( );
 
-  ~${name}(); ///< Destructor 
+  //~${name}(); ///< Destructor, uncomment if necessary
 
 
 protected:

@@ -15,7 +15,7 @@ class ${name} : public GaudiTool ${ExtraToolString} {
 	  const std::string& type,
 	  const std::string& name,
 	  const IInterface* parent);
-  ~${name}(); ///< Destructor 
+  //~${name}(); ///< Destructor, uncomment if necessary
 
  protected:
   

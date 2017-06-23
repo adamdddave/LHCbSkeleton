@@ -1,9 +1,9 @@
 #pragma once
 
-// Include Files                                                                                                                                                                                            
+// Include Files
 
+// from STL
 
-// from STL                                                                                                                                                                                                 
 #include <string>
 
 #include "GaudiKernel/IAlgTool.h"
@@ -13,7 +13,8 @@ ${comment}
 
 class ${name} : virtual public IAlgTool {
  public:
-  // Return the interface ID                                                                                                                                                                          
+  // Return the interface ID
+  
   static const InterfaceID& interfaceID() { return IID_${name}; }
   
 

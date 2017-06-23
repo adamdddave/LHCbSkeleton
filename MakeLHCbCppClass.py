@@ -93,7 +93,7 @@ def make_files(options,name):
             print 'input unknown option! cannot parse!'
             sys.exit()
     #parse if not tty
-    if options.type=='GFA' and options.isTTY==False:
+    if options.type=='GFA' and options.isTTY==False:            
         if options.GaudiFunctional=="T" or options.GaudiFunctional=='':
             options.GaudiFunctional= "Transformer"
             options.GaudiFunctionalInput = 'const INPUT'
@@ -198,7 +198,7 @@ if __name__ == "__main__":
     parser.add_option('-i','--GaudiFunctionalInput',action='store',help='Input for Gaudi Functional Algorithm')
     parser.add_option('-o','--GaudiFunctionalOutput',action='store',help='Output for Gaudi Functional Algorithm')
     parser.add_option('-W','--write', action='store_true',help='Use the python script to write the output')
-    parser.add_option('-n','--nonStandardBase', action='store_true',help='Use a non-standard base with GaudiFunctional')
+    parser.add_option('-n','--GFInheritance', action='store',help='Give a non-standard base with GaudiFunctional')
     (options, args) = parser.parse_args()
 
     options.isTTY = (os.isatty(0)) and (os.isatty(1)) and (os.isatty(2))

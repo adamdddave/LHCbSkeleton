@@ -12,11 +12,11 @@ class ${name} : public Gaudi${AlgorithmTypeName} {
   /// Standard constructor
   ${name} ( const std::string& name, ISvcLocator* pSvcLocator ) ;
   
-  ~${name}();///< Destructor
+  //~${name}();///< Destructor,uncomment if necessary
 
-  StatusCode initialize() override; ///< Algorithm initialization
-  StatusCode execute() override;    ///< Algorithm execution
-  StatusCode finalize() override;    ///< Algorithm finalization
+  StatusCode initialize() override;    ///< Algorithm initialization
+  StatusCode execute   () override;    ///< Algorithm execution
+  StatusCode finalize  () override;    ///< Algorithm finalization
 
  protected:
   

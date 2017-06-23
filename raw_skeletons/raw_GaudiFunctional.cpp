@@ -14,6 +14,6 @@ DECLARE_COMPONENT( ${name} )
 //===========================================================================
 // operator () implementation
 //===========================================================================
-${GaudiFunctionalOutput} ${name}::operator()(${GaudiFunctionalInput} &) const {
+${GaudiFunctionalOutput} ${name}::operator()(${GaudiFunctionalInput}${ref}) const {
   ${operatorParenText}
 }

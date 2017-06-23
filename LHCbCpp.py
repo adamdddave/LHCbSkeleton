@@ -12,6 +12,11 @@ class LHCbCpp:
         self.configs.author = (pwd.getpwuid(os.getuid())[4]).split(',')[0]
         curr_path = os.path.dirname(os.path.abspath(__file__))
         if self.configs.type =='GFA':
+            if self.configs.GaudiFunctional=='Producer':
+                self.configs.GaudiFunctionalInput = ''
+                self.configs.ref = ''
+            else:
+                self.configs.ref = '&'
             the_string = open(curr_path+'/raw_skeletons/raw_GaudiFunctional.cpp','r').read()
             self.configs.operatorParenText = self.configs.GaudiFunctionalOutput + ' ret; return ret;'
             if self.configs.GaudiFunctional=='Consumer':

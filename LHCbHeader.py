@@ -14,19 +14,29 @@ class LHCbHeader:
 
         if self.configs.type =='GFA':
             the_string = open(curr_path+'/raw_skeletons/raw_GaudiFunctional.h','r').read()
+            self.configs.ref = '&'
             funcIO = ''
+            if self.configs.GFInheritance ==None:
+                self.configs.GFInheritance=''
             if self.configs.GaudiFunctional=='Producer':
                 #no input, only output
                 funcIO = 'KeyValue("OutputLocation",{"OUTPUTLOCATION"})'
+                self.configs.GaudiFunctionalInput = ''
+                self.configs.ref = ''
             elif self.configs.GaudiFunctional=='Transformer':
                 funcIO = 'KeyValue("InputLocation",{"INPUTLOCATION"}),\nKeyValue("OutputLocation",{"OUTPUTLOCATION"})'
             elif self.configs.GaudiFunctional=='Consumer':
                 funcIO = 'KeyValue("OutputLocation",{"OUTPUTLOCATION"})'
+
             elif self.configs.GaudiFunctional=='MultiTransformer':
                 funcIO = '{KeyValue("Input1",{"INPUT1LOC"}),\n KeyValue("Input2",{"INPUT2LOC"})},\n{KeyValue("Output1",{"OUTPUTLOC1"}),\n KeyValue("Output2",{"OUTPUTLOC2"})}'
+
             self.configs.funcIO = funcIO
 
         elif self.configs.type == 'T':
+            self.configs.ExtraToolString = ''
+            if not self.configs.Interface==None:
+                self.configs.ExtraToolString = ', virtual public '+self.configs.Interface
             the_string = open(curr_path+'/raw_skeletons/raw_Tool.h','r').read()
 
         elif self.configs.type == 'I':
