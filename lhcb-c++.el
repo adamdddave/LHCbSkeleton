@@ -236,19 +236,18 @@ is displayed"
   
 )
 (if is-gaudi-functional (let ((ibool 
-			       (upcase (read-string "Does this inherit from a non-standard base class?  Y/[N] : "))))
-			  (setq has-ibool (string= "" ibool))
-			  (setq has-ibool (string= "Y" ibool))
+			       (upcase (read-string "Does this inherit from a non-standard base class?  Y/[N] : "))))			 
+			  (if  (string="Y" ibool) 
+			      (setq gf-base-class
+				    (read-string 
+				     "Base Class name (blank = not using an interface) :") 
+				    dum "")
+			    (setq gf-base-class ""))
 			  nil
 			  )
 )
 
-(if has-ibool 			  
-    (setq gf-base-class
-	  (read-string 
-	   "Base Class name (blank = not using an interface) :") 
-	  dum "")
-  (setq gf-base-class ""))
+
   
 
 
@@ -259,7 +258,7 @@ is displayed"
 	(if is-DValg (concat "-d " atype " "))
 	(if (and (not (string= "" interface-name)) is-tool) (concat "-I " interface-name " "))
 	(if is-gaudi-functional (concat "-f " gfa-type " "))
-	(if (and has-ibool (not (string="" gf-base-class))) (concat "-n " gf-base-class " "))
+	(if (and is-gaudi-functional (not (string="" gf-base-class))) (concat "-n " gf-base-class " "))
 				 (file-name-nondirectory buffer-file-name))
 
 )
