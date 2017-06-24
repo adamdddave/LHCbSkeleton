@@ -7,6 +7,7 @@ class LHCbCpp:
     def __init__(self, name,configs = None, requirements = None):
         self.name = name
         self.configs = configs
+        self.configs.name = name
         self.requirements = requirements
         self.configs.date = time.strftime("%Y-%m-%d")
         self.configs.author = (pwd.getpwuid(os.getuid())[4]).split(',')[0]
@@ -23,8 +24,13 @@ class LHCbCpp:
                 self.configs.operatorParenText = 'return;'
         elif self.configs.type == 'T':
             the_string = open(curr_path+'/raw_skeletons/raw_Tool.cpp','r').read()
+            if not self.configs.Interface==None:
+                self.configs.tool_interface = self.configs.Interface
+            else:
+                self.configs.tool_interface = self.configs.name
         elif self.configs.type == 'I':
-            the_string = open(curr_path+'/raw_skeletons/raw_Interface.cpp','r').read()
+            pass
+            #the_string = open(curr_path+'/raw_skeletons/raw_Interface.cpp','r').read()
         elif self.configs.type == 'DVA':
             the_string = open(curr_path+'/raw_skeletons/raw_DaVinciAlgorithm.cpp','r').read()
             if self.configs.DaVinciAlgorithmType=='Normal':

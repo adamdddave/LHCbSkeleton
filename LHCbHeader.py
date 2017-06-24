@@ -35,8 +35,13 @@ class LHCbHeader:
 
         elif self.configs.type == 'T':
             self.configs.ExtraToolString = ''
+            self.configs.ExtraInclude=''
             if not self.configs.Interface==None:
                 self.configs.ExtraToolString = ', virtual public '+self.configs.Interface
+                self.configs.ExtraInclude = '#include "'+self.configs.Interface+'.h" //Interface'
+                self.configs.ExtraToolRet = ''
+            else:
+                self.configs.ExtraToolRet = 'static const InterfaceID& interfaceID() { return IID_%s; }'%self.configs.name
             the_string = open(curr_path+'/raw_skeletons/raw_Tool.h','r').read()
 
         elif self.configs.type == 'I':

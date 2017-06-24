@@ -164,8 +164,9 @@ def make_files(options,name):
     # print 
     #     print 'now using options',options
     #     print type(options)
-    thing = LHCbHeader(name,options)
+    
     if options.Header==True and not exists(name+'.h'):
+        thing = LHCbHeader(name,options)
         ret = thing.genText
         if options.write==True:
             f_dot_h = open(name+'.h','w')
@@ -176,8 +177,9 @@ def make_files(options,name):
     # print 'Generating cpp'
     # print '-'*50
     
-    thing2 = LHCbCpp(name,options)
+    
     if options.cpp==True and not exists(name+'.cpp'):
+        thing2 = LHCbCpp(name,options)
         if options.write==True:
             f_dot_cpp = open(name+'.cpp','w')
             f_dot_cpp.write(thing2.genText)

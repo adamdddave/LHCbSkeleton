@@ -6,7 +6,7 @@
 // local
 #include "${name}.h"
 
-${comment}
+
 
 //----------------------------------------------------------------------------- 
 // Implementation file for class : ${name}
