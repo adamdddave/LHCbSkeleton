@@ -235,6 +235,22 @@ is displayed"
 			  )
   
 )
+(if is-gaudi-functional (let ((ibool 
+			       (upcase (read-string "Does this inherit from a non-standard base class?  Y/[N] : "))))
+			  (setq has-ibool (string= "" ibool))
+			  (setq has-ibool (string= "Y" ibool))
+			  nil
+			  )
+)
+
+(if has-ibool 			  
+    (setq gf-base-class
+	  (read-string 
+	   "Base Class name (blank = not using an interface) :") 
+	  dum "")
+  (setq gf-base-class ""))
+  
+
 
 (shell-command-to-string 
 (concat (getenv "EMACSDIR") "/MakeLHCbCppClass.py " 
@@ -243,9 +259,12 @@ is displayed"
 	(if is-DValg (concat "-d " atype " "))
 	(if (and (not (string= "" interface-name)) is-tool) (concat "-I " interface-name " "))
 	(if is-gaudi-functional (concat "-f " gfa-type " "))
+	(if (and has-ibool (not (string="" gf-base-class))) (concat "-n " gf-base-class " "))
 				 (file-name-nondirectory buffer-file-name))
-)
 
+)
+;;(shell-command-to-string (concat "/afs/cern.ch/user/a/adavis/public/emacs_templates/test/MakeLHCbCppClass.py" " -t A -a N " (file-name-nondirectory buffer-file-name)))
+;;(call-process "/afs/cern.ch/user/a/adavis/public/emacs_templates/test/MakeLHCbCppClass.py" nil t nil (concat " -t A -a N" (file-name-nondirectory buffer-file-name) ))
 
 ) 
 

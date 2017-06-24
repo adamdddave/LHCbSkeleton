@@ -93,7 +93,9 @@ def make_files(options,name):
             print 'input unknown option! cannot parse!'
             sys.exit()
     #parse if not tty
-    if options.type=='GFA' and options.isTTY==False:            
+    if options.type=='GFA' and options.isTTY==False:
+        if not options.GFInheritance==None:
+            options.GFInheritance = ", Gaudi::Functional::Traits::BaseClass_t<%s>"%options.GFInheritance
         if options.GaudiFunctional=="T" or options.GaudiFunctional=='':
             options.GaudiFunctional= "Transformer"
             options.GaudiFunctionalInput = 'const INPUT'
@@ -157,7 +159,7 @@ def make_files(options,name):
         elif options.DaVinciAlgorithmType=="N": options.DaVinciAlgorithmType='Normal'
     #good to go, make some useful things:
     # print 'dumping info'
-    # print 'options = ', options
+    #print 'options = ', options
     #print 'btype = ', btype
     # print 
     #     print 'now using options',options
