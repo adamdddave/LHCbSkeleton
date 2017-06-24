@@ -70,7 +70,7 @@ def make_files(options,name):
     if options.type=='GFA' and options.GaudiFunctional==None and options.isTTY==True:
         gtype = raw_input("Transformer, Producer, Consumer, MultiTransformer [T]/P/C/M : ")#add later , MultiTransformerFilter or FilterPredicate
         #add possible inheritance from non-standard  base class
-        nonStandardBase = raw_input('Does this inherit from a non-standard base class? y/[n]').upper()
+        nonStandardBase = raw_input('Does this inherit from a non-standard base class? Y/[N] : ').upper()
         if nonStandardBase=='Y':
             options.GFInheritance = ', Gaudi::Functional::Traits::BaseClass_t<NONSTANDARDBASE>'
         else: options.GFInheritance= ''
