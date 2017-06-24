@@ -240,7 +240,7 @@ is displayed"
 			  (if  (string="Y" ibool) 
 			      (setq gf-base-class
 				    (read-string 
-				     "Base Class name (blank = not using an interface) :") 
+				     "Base Class name (blank = not using a different base class) :") 
 				    dum "")
 			    (setq gf-base-class ""))
 			  nil
