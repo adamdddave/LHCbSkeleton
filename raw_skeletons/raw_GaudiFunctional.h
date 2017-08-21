@@ -1,7 +1,7 @@
 #pragma once
 
 //From Gaudi
-#include 'GaudiAlg/${GaudiFunctional}'
+#include "GaudiAlg/${GaudiFunctional}"
 
 ${comment}
 
