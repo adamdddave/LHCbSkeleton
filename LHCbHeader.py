@@ -20,13 +20,13 @@ class LHCbHeader:
                 self.configs.GFInheritance=''
             if self.configs.GaudiFunctional=='Producer':
                 #no input, only output
-                funcIO = 'KeyValue("InputLocation",{"INPUTLOCATION"})'
+                funcIO = 'KeyValue("OutputLocation",{"OUTPUTLOCATION"})'
                 self.configs.GaudiFunctionalInput = ''
                 self.configs.ref = ''
             elif self.configs.GaudiFunctional=='Transformer':
                 funcIO = 'KeyValue("InputLocation",{"INPUTLOCATION"}),\nKeyValue("OutputLocation",{"OUTPUTLOCATION"})'
             elif self.configs.GaudiFunctional=='Consumer':
-                funcIO = 'KeyValue("OutputLocation",{"OUTPUTLOCATION"})'
+                funcIO = 'KeyValue("InputLocation",{"INPUTLOCATION"})'
 
             elif self.configs.GaudiFunctional=='MultiTransformer':
                 funcIO = '{KeyValue("Input1",{"INPUT1LOC"}),\n KeyValue("Input2",{"INPUT2LOC"})},\n{KeyValue("Output1",{"OUTPUTLOC1"}),\n KeyValue("Output2",{"OUTPUTLOC2"})}'
